@@ -1,0 +1,17 @@
+[
+  {
+    "owner": "0x012A4ddc4A4f669bAa7327A589F8bDc5e8b494A4",
+    "rootNode": "0x40b0690ad7c2cc9609ea3d1080b9ec83dce381ddd4f1414b6883444451789ffc",
+    "label": "test"
+  },
+  {
+    "owner": "0xFB72CD75d0b9022810F7748Dd36D767836FBcBDE",
+    "rootNode": "0x40b0690ad7c2cc9609ea3d1080b9ec83dce381ddd4f1414b6883444451789ffc",
+    "label": "another"
+  },
+  {
+    "owner": "0x18Ae47C97aFcb1879Ae0114793d9A87549493234",
+    "rootNode": "0x40b0690ad7c2cc9609ea3d1080b9ec83dce381ddd4f1414b6883444451789ffc",
+    "label": "deployer"
+  }
+]

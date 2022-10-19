@@ -1,0 +1,12 @@
+[
+  {
+    "owner": "0x012A4ddc4A4f669bAa7327A589F8bDc5e8b494A4",
+    "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+    "label": "test"
+  },
+  {
+    "owner": "0xFB72CD75d0b9022810F7748Dd36D767836FBcBDE",
+    "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+    "label": "another"
+  }
+]

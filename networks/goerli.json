@@ -1,0 +1,7 @@
+{
+  "Contracts": {
+    "PermissionContract": "0xDEB264E1F78FcD54A0a0aBbCd78F1898aDe26D26",
+    "ENSResolver": "0xBC5be8352cf41e8599a2a8dF1cd35981A7a1193a",
+    "ENSRegistrar": "0xc4eDd5dE467b7d9A2eC8F18C3582388D6Cb0E84e"
+  }
+}
