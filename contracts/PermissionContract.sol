@@ -35,8 +35,17 @@ contract PermissionContract {
     // Root shard => Node => True/False
     mapping(bytes32 => mapping(bytes32 => bool)) internal claimed;
 
-    // Registration fee
-    uint256 public registrationFee = 0.001 ether;
+    // ============ Fee Configuration ============
+
+    // Root node => funding recipient => fee amount
+    mapping(bytes32 => NodeFeeConfig) public feeConfigs;
+    struct NodeFeeConfig {
+        address payable recipient;
+        uint256 fee;
+    }
+
+    // Soul commission charge bips
+    uint256 public commissionBips = 0;
 
     // ============ Events ============
 
@@ -47,6 +56,8 @@ contract PermissionContract {
     );
     event RootUpdated(bytes32 rootShard, bytes32 oldRoot, bytes32 newRoot);
     event Transfer(address indexed from, address indexed to, uint256 value);
+    event FeeUpdated(bytes32 rootNode, uint256 newFee);
+    event CommissionBipsUpdated(uint256 newBips);
 
     // ============ Modifiers ============
 
@@ -103,16 +114,25 @@ contract PermissionContract {
         payable
         canRegister
     {
-//        require(msg.value >= registrationFee, "registration fee required");
+        // Check the registration fee
+        NodeFeeConfig memory feeConfig = feeConfigs[rootNode_];
+        require(msg.value >= feeConfig.fee, "registration fee required");
 
-        emit Registered(label_, owner_);
-        // Generate the node for the merkle tree.
-        bytes32 merkleNode = keccak256(abi.encodePacked(owner_, rootNode_, label_));
+        uint256 payout = feeConfig.fee * (10000 - commissionBips) / 10000;
+        if (payout > 0) {
+            _sendFunds(feeConfig.recipient, payout);
+            emit Transfer(address(this), feeConfig.recipient, payout);
+        }
+
         // Make sure it's not already claimed.
         //        require(!claimed[rootShard_][rootNode_], "PermissionContract: already claimed.");
         // Verify the merkle proof.
         require(
-            MerkleProof.verify(merkleProof_, merkleRoots[rootShard_], merkleNode),
+            MerkleProof.verify(
+                merkleProof_,
+                merkleRoots[rootShard_],
+                keccak256(abi.encodePacked(owner_, rootNode_, label_))
+            ),
             "PermissionContract: Invalid proof."
         );
         // Mark it claimed.
@@ -124,6 +144,7 @@ contract PermissionContract {
             label_,
             owner_
         );
+        emit Registered(label_, owner_);
     }
 
     // ============ Ownership ============
@@ -177,9 +198,8 @@ contract PermissionContract {
     function acceptOwnership() external onlyNextOwner {
         delete _nextOwner;
 
-        emit OwnershipTransferred(_owner, msg.sender);
-
         _owner = msg.sender;
+        emit OwnershipTransferred(_owner, msg.sender);
     }
 
     /**
@@ -190,8 +210,8 @@ contract PermissionContract {
      * thereby removing any functionality that is only available to the owner.
      */
     function renounceOwnership() external onlyOwner {
-        emit OwnershipTransferred(_owner, address(0));
         _owner = address(0);
+        emit OwnershipTransferred(_owner, address(0));
     }
 
     // ============ Configuration Management ============
@@ -210,11 +230,28 @@ contract PermissionContract {
         registrable = registrable_;
     }
 
+    /**
+     * Allows the root provider to set/update registration fee recipient and amount
+     */
+    function setRegistrationFee(bytes32 rootNode, NodeFeeConfig memory feeConfig) external onlyRootProvider {
+        feeConfigs[rootNode] = feeConfig;
+        emit FeeUpdated(rootNode, feeConfig.fee);
+    }
+
+    /**
+     * Allows the owner to set the commission bips
+     */
+    function setCommissionBips(uint256 newBips) external onlyOwner {
+        require(newBips <= 10000, "Invalid commission bips");
+        commissionBips = newBips;
+        emit CommissionBipsUpdated(newBips);
+    }
+
     // ============ Merkle-Tree Token Claim ============
 
     function setMerkleRoot(bytes32 rootShard, bytes32 merkleRoot_) external onlyRootProvider {
-        emit RootUpdated(rootShard, merkleRoots[rootShard], merkleRoot_);
         merkleRoots[rootShard] = merkleRoot_;
+        emit RootUpdated(rootShard, merkleRoots[rootShard], merkleRoot_);
     }
 
     function getMerkleRoot(bytes32 shard) public view returns (bytes32) {
@@ -232,11 +269,6 @@ contract PermissionContract {
     }
 
     function _sendFunds(address payable recipient, uint256 amount) private {
-        require(
-            address(this).balance >= amount,
-            "Insufficient balance for send"
-        );
-
         (bool success,) = recipient.call{value : amount}("");
         require(success, "Unable to send value: recipient may have reverted");
     }
