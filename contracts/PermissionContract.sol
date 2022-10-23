@@ -80,7 +80,10 @@ contract PermissionContract {
     }
 
     modifier onlyRootProvider() {
-        require(isRootProvider() || isOwner(), "PermissionContract: caller is not the root provider or owner.");
+        require(
+            isRootProvider() || isOwner(),
+            "PermissionContract: caller is not the root provider or owner."
+        );
         _;
     }
 
@@ -198,8 +201,8 @@ contract PermissionContract {
     function acceptOwnership() external onlyNextOwner {
         delete _nextOwner;
 
-        _owner = msg.sender;
         emit OwnershipTransferred(_owner, msg.sender);
+        _owner = msg.sender;
     }
 
     /**
@@ -210,8 +213,8 @@ contract PermissionContract {
      * thereby removing any functionality that is only available to the owner.
      */
     function renounceOwnership() external onlyOwner {
-        _owner = address(0);
         emit OwnershipTransferred(_owner, address(0));
+        _owner = address(0);
     }
 
     // ============ Configuration Management ============
@@ -250,8 +253,8 @@ contract PermissionContract {
     // ============ Merkle-Tree Token Claim ============
 
     function setMerkleRoot(bytes32 rootShard, bytes32 merkleRoot_) external onlyRootProvider {
-        merkleRoots[rootShard] = merkleRoot_;
         emit RootUpdated(rootShard, merkleRoots[rootShard], merkleRoot_);
+        merkleRoots[rootShard] = merkleRoot_;
     }
 
     function getMerkleRoot(bytes32 shard) public view returns (bytes32) {
