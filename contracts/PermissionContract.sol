@@ -5,6 +5,7 @@ import {
 MerkleProof
 } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {IENSRegistrar} from "./ens/interfaces/IENSRegistrar.sol";
+import "hardhat/console.sol";
 
 /**
  * @title PermissionContract
@@ -119,7 +120,7 @@ contract PermissionContract {
     {
         // Check the registration fee
         NodeFeeConfig memory feeConfig = feeConfigs[rootNode_];
-        require(msg.value >= feeConfig.fee, "registration fee required");
+        require(msg.value >= feeConfig.fee, "PermissionContract: registration fee required");
 
         uint256 payout = feeConfig.fee * (10000 - commissionBips) / 10000;
         if (payout > 0) {
@@ -245,7 +246,7 @@ contract PermissionContract {
      * Allows the owner to set the commission bips
      */
     function setCommissionBips(uint256 newBips) external onlyOwner {
-        require(newBips <= 10000, "Invalid commission bips");
+        require(newBips <= 10000, "PermissionContract: Invalid commission bips");
         commissionBips = newBips;
         emit CommissionBipsUpdated(newBips);
     }
