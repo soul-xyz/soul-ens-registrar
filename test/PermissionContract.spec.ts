@@ -1,6 +1,6 @@
 import {expect} from "chai";
 import {BigNumber} from "ethers";
-import {ethers} from "hardhat";
+import {ethers, waffle} from "hardhat";
 
 import setup from "./setup";
 
@@ -18,6 +18,9 @@ describe("PermissionContract", () => {
     let account3;
     let originalOwner;
 
+    // Fees
+    let feeConfig;
+
     beforeEach(async () => {
         ({
             permissionContract,
@@ -28,6 +31,11 @@ describe("PermissionContract", () => {
         } = await setup());
 
         [owner, account1, account2, account3] = await ethers.getSigners();
+
+        feeConfig = {
+            recipient: account1.address,
+            fee: ethers.utils.parseEther('0.001')
+        };
     });
 
     describe("deployed", () => {
@@ -43,7 +51,6 @@ describe("PermissionContract", () => {
             expect(isRegistrable).to.eq(true);
         });
     });
-
 
     describe("#setENSRegistrar", () => {
         describe("when called by the owner", () => {
@@ -92,6 +99,57 @@ describe("PermissionContract", () => {
 
                 await permissionContract.connect(owner).setRegistrable(true);
                 expect(await permissionContract.registrable()).to.eq(true);
+            });
+        });
+    });
+
+    describe("#setRegistrationFee", () => {
+        describe("when called by an address that is not the root provider", () => {
+            it("reverts the transaction", async () => {
+                const transaction = permissionContract.connect(account1).setRegistrationFee(
+                    "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+                    feeConfig
+                );
+                await expect(transaction).to.be.revertedWith(
+                    "PermissionContract: caller is not the root provider or owner."
+                );
+            });
+        });
+
+        describe("when called by the root provider", () => {
+            it("updates the feeConfigs variable appropriately", async () => {
+                const transaction = permissionContract.connect(owner).setRegistrationFee(
+                    "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+                    feeConfig
+                );
+                await expect(transaction).to.emit(permissionContract, "FeeUpdated");
+                const storedFeeConfig = await permissionContract
+                    .feeConfigs("0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e");
+                expect(storedFeeConfig.recipient).to.eq(account1.address);
+            });
+        });
+    });
+
+    describe("#setCommissionBips", () => {
+        describe("when called by an address that is not the owner", () => {
+            it("reverts the transaction", async () => {
+                const transaction = permissionContract.connect(account1).setCommissionBips(10);
+                await expect(transaction).to.be.revertedWith("PermissionContract: caller is not the owner");
+            });
+        });
+
+        describe("when called by the owner", () => {
+            describe("with invalid bips number", () => {
+                it("reverts the transaction", async () => {
+                    const transaction = permissionContract.connect(owner).setCommissionBips(1000000);
+                    await expect(transaction).to.be.revertedWith("PermissionContract: Invalid commission bips");
+                });
+            })
+
+            it("updates the commissionBips variable appropriately with all valid condition", async () => {
+                const transaction = permissionContract.connect(owner).setCommissionBips(10);
+                await expect(transaction).to.emit(permissionContract, "CommissionBipsUpdated");
+                expect(await permissionContract.commissionBips()).to.eq(10);
             });
         });
     });
@@ -193,7 +251,57 @@ describe("PermissionContract", () => {
             //     // receipt = await transaction.wait();
             // });
 
+            describe(" but with insufficient fund for registration fee", () => {
+                it("reverts the transaction", async () => {
+                    permissionContract.connect(owner).setRegistrationFee(
+                        firstClaim.rootNode,
+                        feeConfig
+                    );
+
+                    const transaction = permissionContract
+                        .connect(account1)
+                        .registerWithProof(
+                            claimer,
+                            rootName,
+                            firstClaim.rootNode,
+                            firstClaim.label,
+                            shard,
+                            firstClaim.proof
+                        );
+
+                    await expect(transaction).to.be.revertedWith(
+                        "PermissionContract: registration fee required"
+                    );
+                });
+            });
+
             describe("and all other conditions are correct", () => {
+                it("takes fees and commissions correctly", async () => {
+                    const provider = waffle.provider;
+                    const originalBalance = await provider.getBalance(permissionContract.address);
+
+                    permissionContract.connect(owner).setRegistrationFee(
+                        firstClaim.rootNode,
+                        feeConfig
+                    );
+                    permissionContract.connect(owner).setCommissionBips(9000);
+
+                    const transaction = permissionContract
+                        .connect(account1)
+                        .registerWithProof(
+                            claimer,
+                            rootName,
+                            firstClaim.rootNode,
+                            firstClaim.label,
+                            shard,
+                            firstClaim.proof,
+                            {value: ethers.utils.parseEther('0.001')}
+                        );
+                    await expect(transaction).to.emit(permissionContract, "Transfer");
+                    const newBalance = await provider.getBalance(permissionContract.address);
+                    expect(newBalance).to.be.gt(originalBalance);
+                });
+
                 it("registers the subdomain", async () => {
                     const transaction = permissionContract
                         .connect(account1)

@@ -25,7 +25,9 @@ interface PermissionContractInterface extends ethers.utils.Interface {
   functions: {
     "acceptOwnership()": FunctionFragment;
     "cancelOwnershipTransfer()": FunctionFragment;
+    "commissionBips()": FunctionFragment;
     "ensRegistrar()": FunctionFragment;
+    "feeConfigs(bytes32)": FunctionFragment;
     "getMerkleRoot(bytes32)": FunctionFragment;
     "isClaimed(bytes32,bytes32)": FunctionFragment;
     "isNextOwner()": FunctionFragment;
@@ -34,11 +36,12 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     "merkleRoots(bytes32)": FunctionFragment;
     "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])": FunctionFragment;
     "registrable()": FunctionFragment;
-    "registrationFee()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "setCommissionBips(uint256)": FunctionFragment;
     "setENSRegistrar(address)": FunctionFragment;
     "setMerkleRoot(bytes32,bytes32)": FunctionFragment;
     "setRegistrable(bool)": FunctionFragment;
+    "setRegistrationFee(bytes32,tuple)": FunctionFragment;
     "transferFunds(address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
   };
@@ -52,8 +55,16 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "commissionBips",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "ensRegistrar",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "feeConfigs",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getMerkleRoot",
@@ -85,12 +96,12 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "registrationFee",
+    functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
+    functionFragment: "setCommissionBips",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setENSRegistrar",
@@ -103,6 +114,10 @@ interface PermissionContractInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setRegistrable",
     values: [boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRegistrationFee",
+    values: [BytesLike, { recipient: string; fee: BigNumberish }]
   ): string;
   encodeFunctionData(
     functionFragment: "transferFunds",
@@ -122,9 +137,14 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "commissionBips",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "ensRegistrar",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "feeConfigs", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getMerkleRoot",
     data: BytesLike
@@ -152,11 +172,11 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registrationFee",
+    functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "renounceOwnership",
+    functionFragment: "setCommissionBips",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -172,6 +192,10 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setRegistrationFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "transferFunds",
     data: BytesLike
   ): Result;
@@ -181,12 +205,16 @@ interface PermissionContractInterface extends ethers.utils.Interface {
   ): Result;
 
   events: {
+    "CommissionBipsUpdated(uint256)": EventFragment;
+    "FeeUpdated(bytes32,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Registered(string,address)": EventFragment;
     "RootUpdated(bytes32,bytes32,bytes32)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "CommissionBipsUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeeUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Registered"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RootUpdated"): EventFragment;
@@ -219,9 +247,23 @@ export class PermissionContract extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    commissionBips(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "commissionBips()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     ensRegistrar(overrides?: CallOverrides): Promise<[string]>;
 
     "ensRegistrar()"(overrides?: CallOverrides): Promise<[string]>;
+
+    feeConfigs(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+    "feeConfigs(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
 
     getMerkleRoot(
       shard: BytesLike,
@@ -288,13 +330,19 @@ export class PermissionContract extends Contract {
 
     "registrable()"(overrides?: CallOverrides): Promise<[boolean]>;
 
-    registrationFee(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    "registrationFee()"(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     renounceOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+    setCommissionBips(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setCommissionBips(uint256)"(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     setENSRegistrar(
       ensRegistrar_: string,
@@ -325,6 +373,18 @@ export class PermissionContract extends Contract {
 
     "setRegistrable(bool)"(
       registrable_: boolean,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setRegistrationFee(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setRegistrationFee(bytes32,(address,uint256))"(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -361,9 +421,23 @@ export class PermissionContract extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  commissionBips(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "commissionBips()"(overrides?: CallOverrides): Promise<BigNumber>;
+
   ensRegistrar(overrides?: CallOverrides): Promise<string>;
 
   "ensRegistrar()"(overrides?: CallOverrides): Promise<string>;
+
+  feeConfigs(
+    arg0: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+  "feeConfigs(bytes32)"(
+    arg0: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
 
   getMerkleRoot(shard: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -427,13 +501,19 @@ export class PermissionContract extends Contract {
 
   "registrable()"(overrides?: CallOverrides): Promise<boolean>;
 
-  registrationFee(overrides?: CallOverrides): Promise<BigNumber>;
-
-  "registrationFee()"(overrides?: CallOverrides): Promise<BigNumber>;
-
   renounceOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
   "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+  setCommissionBips(
+    newBips: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setCommissionBips(uint256)"(
+    newBips: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   setENSRegistrar(
     ensRegistrar_: string,
@@ -464,6 +544,18 @@ export class PermissionContract extends Contract {
 
   "setRegistrable(bool)"(
     registrable_: boolean,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setRegistrationFee(
+    rootNode: BytesLike,
+    feeConfig: { recipient: string; fee: BigNumberish },
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setRegistrationFee(bytes32,(address,uint256))"(
+    rootNode: BytesLike,
+    feeConfig: { recipient: string; fee: BigNumberish },
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -498,9 +590,23 @@ export class PermissionContract extends Contract {
 
     "cancelOwnershipTransfer()"(overrides?: CallOverrides): Promise<void>;
 
+    commissionBips(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "commissionBips()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     ensRegistrar(overrides?: CallOverrides): Promise<string>;
 
     "ensRegistrar()"(overrides?: CallOverrides): Promise<string>;
+
+    feeConfigs(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+    "feeConfigs(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
 
     getMerkleRoot(shard: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -564,13 +670,19 @@ export class PermissionContract extends Contract {
 
     "registrable()"(overrides?: CallOverrides): Promise<boolean>;
 
-    registrationFee(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "registrationFee()"(overrides?: CallOverrides): Promise<BigNumber>;
-
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     "renounceOwnership()"(overrides?: CallOverrides): Promise<void>;
+
+    setCommissionBips(
+      newBips: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setCommissionBips(uint256)"(
+      newBips: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     setENSRegistrar(
       ensRegistrar_: string,
@@ -604,6 +716,18 @@ export class PermissionContract extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setRegistrationFee(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setRegistrationFee(bytes32,(address,uint256))"(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     transferFunds(
       to: string,
       value: BigNumberish,
@@ -628,6 +752,10 @@ export class PermissionContract extends Contract {
   };
 
   filters: {
+    CommissionBipsUpdated(newBips: null): EventFilter;
+
+    FeeUpdated(rootNode: null, newFee: null): EventFilter;
+
     OwnershipTransferred(
       previousOwner: string | null,
       newOwner: string | null
@@ -649,9 +777,20 @@ export class PermissionContract extends Contract {
 
     "cancelOwnershipTransfer()"(overrides?: Overrides): Promise<BigNumber>;
 
+    commissionBips(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "commissionBips()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     ensRegistrar(overrides?: CallOverrides): Promise<BigNumber>;
 
     "ensRegistrar()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    feeConfigs(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "feeConfigs(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getMerkleRoot(
       shard: BytesLike,
@@ -718,13 +857,19 @@ export class PermissionContract extends Contract {
 
     "registrable()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    registrationFee(overrides?: CallOverrides): Promise<BigNumber>;
-
-    "registrationFee()"(overrides?: CallOverrides): Promise<BigNumber>;
-
     renounceOwnership(overrides?: Overrides): Promise<BigNumber>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<BigNumber>;
+
+    setCommissionBips(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setCommissionBips(uint256)"(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
 
     setENSRegistrar(
       ensRegistrar_: string,
@@ -755,6 +900,18 @@ export class PermissionContract extends Contract {
 
     "setRegistrable(bool)"(
       registrable_: boolean,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setRegistrationFee(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setRegistrationFee(bytes32,(address,uint256))"(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -794,9 +951,25 @@ export class PermissionContract extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    commissionBips(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "commissionBips()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     ensRegistrar(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "ensRegistrar()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    feeConfigs(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "feeConfigs(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getMerkleRoot(
       shard: BytesLike,
@@ -868,15 +1041,19 @@ export class PermissionContract extends Contract {
 
     "registrable()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    registrationFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    "registrationFee()"(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     renounceOwnership(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    setCommissionBips(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setCommissionBips(uint256)"(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     setENSRegistrar(
       ensRegistrar_: string,
@@ -907,6 +1084,18 @@ export class PermissionContract extends Contract {
 
     "setRegistrable(bool)"(
       registrable_: boolean,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setRegistrationFee(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setRegistrationFee(bytes32,(address,uint256))"(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
