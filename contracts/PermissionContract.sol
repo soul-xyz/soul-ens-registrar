@@ -170,7 +170,7 @@ contract PermissionContract {
         claimed[rootShard_][claimId] = true;
 
         // NOTE: No registration fee for existing NFT holders.
-        address owner_ = IERC721(nftContract_).ownerOf(tokenId);
+        require((msg.sender == IERC721(nftContract_).ownerOf(tokenId)), "caller must be owner");
 
         // Verify the merkle proof that the NFT contract is in the merkle tree.
         require(
@@ -188,9 +188,9 @@ contract PermissionContract {
             rootName_,
             rootNode_,
             label_,
-            owner_
+            msg.sender
         );
-        emit Registered(label_, owner_);
+        emit Registered(label_, msg.sender);
     }
 
     // ============ Ownership ============

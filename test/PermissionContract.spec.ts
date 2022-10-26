@@ -482,7 +482,7 @@ describe("PermissionContract", () => {
 
         it("allows minting from ownership", async () => {
             const admitOneOwner = await admitOne.owner();
-            const validOwner = getAddress("0xFB72CD75d0b9022810F7748Dd36D767836FBcBDE");
+            const validOwner = account1.address;
             expect(owner.address).to.eq(admitOneOwner);
             const tokenId = 1;
             await admitOne.connect(owner).ownerMint(validOwner, tokenId);
@@ -534,7 +534,7 @@ describe("PermissionContract", () => {
 
         it("does not allow minting without ownership", async () => {
             const admitOneOwner = await admitOne.owner();
-            const validOwner = getAddress("0xFB72CD75d0b9022810F7748Dd36D767836FBcBDE");
+            const validOwner = account1.address;
             expect(owner.address).to.eq(admitOneOwner);
 
             const validTokenId = 1;
@@ -575,7 +575,7 @@ describe("PermissionContract", () => {
 
         it("does not allow minting with another ERC20", async () => {
             const admitTwoOwner = await admitTwo.owner();
-            const validOwner = getAddress("0xFB72CD75d0b9022810F7748Dd36D767836FBcBDE");
+            const validOwner = account1.address;
             expect(owner.address).to.eq(admitTwoOwner);
 
             const validTokenId = 1;
