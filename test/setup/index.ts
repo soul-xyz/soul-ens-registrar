@@ -57,12 +57,25 @@ async function setup() {
         ensRegistrar.address
     );
 
+    // Deploy Admit One Token.
+    const AdmitOne = await ethers.getContractFactory(
+        "AdmitOne"
+    );
+    const admitOne = await AdmitOne.deploy(owner.address);
+    await admitOne.deployed();
+
+    // A second, similar contract.
+    const admitTwo = await AdmitOne.deploy(owner.address);
+    await admitTwo.deployed();
+
     return {
         originalOwner: owner,
         permissionContract,
         ensRegistrar,
         ensRegistry,
         ensResolver,
+        admitOne,
+        admitTwo
     };
 }
 
