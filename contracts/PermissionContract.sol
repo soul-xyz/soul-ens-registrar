@@ -34,7 +34,7 @@ contract PermissionContract {
 
     mapping(bytes32 => bytes32) public merkleRoots;
     // Root shard => id => True/False
-    mapping(bytes32 => mapping(uint256 => bool)) internal claimed;
+    mapping(bytes32 => mapping(bytes32 => bool)) internal claimed;
 
     // ============ Fee Configuration ============
 
@@ -163,10 +163,11 @@ contract PermissionContract {
         payable
         canRegister
     {
+        bytes32 claimId = keccak256(abi.encodePacked(tokenId, nftContract_));
         //  Make sure it's not already claimed.
-        require(!claimed[rootShard_][tokenId], "PermissionContract: already claimed.");
+        require(!claimed[rootShard_][claimId], "PermissionContract: already claimed.");
         // Mark it as claimed.
-        claimed[rootShard_][tokenId] = true;
+        claimed[rootShard_][claimId] = true;
 
         // NOTE: No registration fee for existing NFT holders.
         address owner_ = IERC721(nftContract_).ownerOf(tokenId);

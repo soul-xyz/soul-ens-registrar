@@ -473,7 +473,6 @@ describe("PermissionContract", () => {
             // This claim data has one node that specifies a label of "*", which can
             // be used to claim via NFT ownership.
             claimData = parseBalanceMap(merkleTreeInputs);
-            console.log({claimData});
 
             await permissionContract.connect(owner).setMerkleRoot(
                 shard,
@@ -514,6 +513,23 @@ describe("PermissionContract", () => {
                 ethers.utils.namehash(`${desiredLabel}.soul.xyz`)
             );
             expect(subdomainOwner).to.eq(claimer);
+
+            // Also we should not be able to mint again.
+            const transactionTwo = permissionContract
+                .connect(account1)
+                .registerWithNFTOwnership(
+                    admitOne.address,
+                    tokenId,
+                    rootName,
+                    claim.rootNode,
+                    `${desiredLabel}b`,
+                    shard,
+                    claim.proof
+                );
+
+            await expect(transactionTwo).to.be.revertedWith(
+                "PermissionContract: already claimed."
+            );
         });
 
         it("does not allow minting without ownership", async () => {
@@ -535,7 +551,6 @@ describe("PermissionContract", () => {
             let rootName = "soul.xyz";
             const desiredLabel = "king";
             const claim = claimData.claims[admitOne.address];
-            console.log({claim});
             const transaction = permissionContract
                 .connect(account1)
                 .registerWithNFTOwnership(
@@ -576,7 +591,6 @@ describe("PermissionContract", () => {
             let rootName = "soul.xyz";
             const desiredLabel = "king";
             const claim = claimData.claims[admitOne.address];
-            console.log({claim});
             const transaction = permissionContract
                 .connect(account1)
                 .registerWithNFTOwnership(
