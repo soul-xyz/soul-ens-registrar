@@ -7,9 +7,6 @@ MerkleProof
 import {IENSRegistrar} from "./ens/interfaces/IENSRegistrar.sol";
 import {IERC721} from "./lib/ERC721/interface/IERC721.sol";
 
-// TODO: Remove.
-import {console} from "hardhat/console.sol";
-
 /**
  * @title PermissionContract
  * @author Graeme (@strangechances)
@@ -173,8 +170,6 @@ contract PermissionContract {
 
         // NOTE: No registration fee for existing NFT holders.
         address owner_ = IERC721(nftContract_).ownerOf(tokenId);
-
-        console.logAddress(owner_);
 
         // Verify the merkle proof that the NFT contract is in the merkle tree.
         require(
