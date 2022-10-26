@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {
-MerkleProof
+    MerkleProof
 } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {IENSRegistrar} from "./ens/interfaces/IENSRegistrar.sol";
 import {IERC721} from "./lib/ERC721/interface/IERC721.sol";
