@@ -35,11 +35,24 @@ async function main() {
   let ENS_REGISTRY_ADDRESS;
   let ROOT_NAME;
   let ROOT_NODE;
+  let admitOneAddress;
 
   if (networkName === "mainnet") {
     ({ ENS_REGISTRY_ADDRESS } = config.production);
   } else {
     ({ ENS_REGISTRY_ADDRESS } = config.test);
+
+    console.log("Deploying AdmitOne");
+
+    // Deploy Admit One Token for testing.
+    const AdmitOne = await ethers.getContractFactory(
+        "AdmitOne"
+    );
+    const admitOne = await AdmitOne.deploy(
+        "0x18Ae47C97aFcb1879Ae0114793d9A87549493234"
+    );
+    admitOneAddress = (await admitOne.deployed()).address;
+    console.log({admitOneAddress});
   }
 
   if (isLocal) {
@@ -90,6 +103,7 @@ async function main() {
       PermissionContract: permissionContract.address,
       ENSResolver: ensResolver.address,
       ENSRegistrar: ensRegistrar.address,
+      admitOneAddress
     },
   };
 
