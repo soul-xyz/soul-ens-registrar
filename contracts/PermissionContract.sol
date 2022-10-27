@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 import {
-MerkleProof
+    MerkleProof
 } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {IENSRegistrar} from "./ens/interfaces/IENSRegistrar.sol";
-import "hardhat/console.sol";
+import {IERC721} from "./lib/ERC721/interface/IERC721.sol";
 
 /**
  * @title PermissionContract
@@ -33,7 +33,7 @@ contract PermissionContract {
     // ============ Merkle Root Configuration ============
 
     mapping(bytes32 => bytes32) public merkleRoots;
-    // Root shard => Node => True/False
+    // Root shard => id => True/False
     mapping(bytes32 => mapping(bytes32 => bool)) internal claimed;
 
     // ============ Fee Configuration ============
@@ -90,7 +90,7 @@ contract PermissionContract {
 
     // ============ Constructor ============
 
-    constructor() public {
+    constructor() {
         _owner = tx.origin;
         emit OwnershipTransferred(address(0), _owner);
     }
@@ -128,8 +128,6 @@ contract PermissionContract {
             emit Transfer(address(this), feeConfig.recipient, payout);
         }
 
-        // Make sure it's not already claimed.
-        //        require(!claimed[rootShard_][rootNode_], "PermissionContract: already claimed.");
         // Verify the merkle proof.
         require(
             MerkleProof.verify(
@@ -139,8 +137,9 @@ contract PermissionContract {
             ),
             "PermissionContract: Invalid proof."
         );
-        // Mark it claimed.
-        //        claimed[rootShard_][merkleNode] = true;
+
+        // We don't need to mark it as claimed, because the label is already scarce.
+
         // Register the node.
         IENSRegistrar(ensRegistrar).register(
             rootName_,
@@ -149,6 +148,49 @@ contract PermissionContract {
             owner_
         );
         emit Registered(label_, owner_);
+    }
+
+    function registerWithNFTOwnership(
+        address nftContract_,
+        uint256 tokenId,
+        string memory rootName_,
+        bytes32 rootNode_,
+        string calldata label_,
+        bytes32 rootShard_,
+        bytes32[] calldata merkleProof_
+    )
+        external
+        payable
+        canRegister
+    {
+        bytes32 claimId = keccak256(abi.encodePacked(tokenId, nftContract_));
+        //  Make sure it's not already claimed.
+        require(!claimed[rootShard_][claimId], "PermissionContract: already claimed.");
+        // Mark it as claimed.
+        claimed[rootShard_][claimId] = true;
+
+        // NOTE: No registration fee for existing NFT holders.
+        require((msg.sender == IERC721(nftContract_).ownerOf(tokenId)), "caller must be owner");
+
+        // Verify the merkle proof that the NFT contract is in the merkle tree.
+        require(
+            MerkleProof.verify(
+                merkleProof_,
+                merkleRoots[rootShard_],
+                // We use * as the label to allow any label to be registered within this ownership.
+                keccak256(abi.encodePacked(nftContract_, rootNode_, "*"))
+            ),
+            "PermissionContract: Invalid proof."
+        );
+
+        // Register the node.
+        IENSRegistrar(ensRegistrar).register(
+            rootName_,
+            rootNode_,
+            label_,
+            msg.sender
+        );
+        emit Registered(label_, msg.sender);
     }
 
     // ============ Ownership ============
@@ -260,10 +302,6 @@ contract PermissionContract {
 
     function getMerkleRoot(bytes32 shard) public view returns (bytes32) {
         return merkleRoots[shard];
-    }
-
-    function isClaimed(bytes32 rootShard, bytes32 node) public view returns (bool) {
-        return claimed[rootShard][node];
     }
 
     function transferFunds(address payable to, uint256 value) external onlyOwner

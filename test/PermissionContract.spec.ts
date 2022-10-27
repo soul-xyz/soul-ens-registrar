@@ -3,6 +3,8 @@ import {BigNumber} from "ethers";
 import {ethers, waffle} from "hardhat";
 
 import setup from "./setup";
+import {parseBalanceMap} from "../merkle-distribution/parse-balance-map";
+import {getAddress} from "ethers/lib/utils";
 
 describe("PermissionContract", () => {
     // Contracts
@@ -10,6 +12,8 @@ describe("PermissionContract", () => {
     let ensRegistrar;
     let ensRegistry;
     let ensResolver;
+    let admitOne;
+    let admitTwo;
 
     // Accounts
     let owner;
@@ -27,7 +31,9 @@ describe("PermissionContract", () => {
             ensRegistrar,
             ensRegistry,
             ensResolver,
-            originalOwner
+            originalOwner,
+            admitOne,
+            admitTwo
         } = await setup());
 
         [owner, account1, account2, account3] = await ethers.getSigners();
@@ -154,7 +160,7 @@ describe("PermissionContract", () => {
         });
     });
 
-    describe("#register", () => {
+    describe("#registerWithProof", () => {
         let claimData = {
             "merkleRoot": "0x3d3e67e1580879652bce1393e5c826b3765ea82ae754b98f5d49f7154c1a06bb",
             "claims": {
@@ -440,5 +446,171 @@ describe("PermissionContract", () => {
                 });
             });
         });
+    });
+
+    describe("#registerWithNFTOwnership", () => {
+        let merkleTreeInputs;
+        let claimData;
+        let shard = ethers.utils.id("0");
+        let rootName = "soul.xyz";
+
+        beforeEach(async () => {
+            merkleTreeInputs = [
+                {
+                    "owner": "0x012A4ddc4A4f669bAa7327A589F8bDc5e8b494A4",
+                    "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+                    "label": "test"
+                },
+                {
+                    // Owner is a contract here.
+                    "owner": admitOne.address,
+                    "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+                    // Here a label being * means that it's a contract.
+                    "label": "*"
+                }
+            ]
+
+            // This claim data has one node that specifies a label of "*", which can
+            // be used to claim via NFT ownership.
+            claimData = parseBalanceMap(merkleTreeInputs);
+
+            await permissionContract.connect(owner).setMerkleRoot(
+                shard,
+                claimData.merkleRoot
+            );
+        });
+
+        it("allows minting from ownership", async () => {
+            const admitOneOwner = await admitOne.owner();
+            const validOwner = account1.address;
+            expect(owner.address).to.eq(admitOneOwner);
+            const tokenId = 1;
+            await admitOne.connect(owner).ownerMint(validOwner, tokenId);
+            // Check that the balances updated properly.
+            expect(await admitOne.ownerOf(tokenId)).to.eq(validOwner);
+            expect(await admitOne.balanceOf(validOwner)).to.eq(1);
+            // Now check that this owner can mint on the contract.
+            let shard = ethers.utils.id("0");
+            let rootName = "soul.xyz";
+            const desiredLabel = "king";
+            const claimer = validOwner;
+            const claim = claimData.claims[admitOne.address];
+            const transaction = permissionContract
+                .connect(account1)
+                .registerWithNFTOwnership(
+                    admitOne.address,
+                    tokenId,
+                    rootName,
+                    claim.rootNode,
+                    desiredLabel,
+                    shard,
+                    claim.proof
+                );
+
+            await expect(transaction).not.to.be.reverted;
+
+            const subdomainOwner = await ensRegistry.owner(
+                ethers.utils.namehash(`${desiredLabel}.soul.xyz`)
+            );
+            expect(subdomainOwner).to.eq(claimer);
+
+            // Also we should not be able to mint again.
+            const transactionTwo = permissionContract
+                .connect(account1)
+                .registerWithNFTOwnership(
+                    admitOne.address,
+                    tokenId,
+                    rootName,
+                    claim.rootNode,
+                    `${desiredLabel}b`,
+                    shard,
+                    claim.proof
+                );
+
+            await expect(transactionTwo).to.be.revertedWith(
+                "PermissionContract: already claimed."
+            );
+        });
+
+        it("does not allow minting without ownership", async () => {
+            const admitOneOwner = await admitOne.owner();
+            const validOwner = account1.address;
+            expect(owner.address).to.eq(admitOneOwner);
+
+            const validTokenId = 1;
+            await admitOne.connect(owner).ownerMint(validOwner, validTokenId);
+            // Check that the balances updated properly.
+            expect(await admitOne.ownerOf(validTokenId)).to.eq(validOwner);
+            expect(await admitOne.balanceOf(validOwner)).to.eq(1);
+
+            // Changing to tokenId 2 should disallow minting, since there is no owner.
+            const invalidTokenId = 2;
+
+            // Now check that this owner can mint on the contract.
+            let shard = ethers.utils.id("0");
+            let rootName = "soul.xyz";
+            const desiredLabel = "king";
+            const claim = claimData.claims[admitOne.address];
+            const transaction = permissionContract
+                .connect(account1)
+                .registerWithNFTOwnership(
+                    admitOne.address,
+                    invalidTokenId,
+                    rootName,
+                    claim.rootNode,
+                    desiredLabel,
+                    shard,
+                    claim.proof
+                );
+
+            await expect(transaction).to.be.revertedWith(
+                "ERC721: owner query for nonexistent token"
+            );
+
+            const subdomainOwner = await ensRegistry.owner(
+                ethers.utils.namehash(`${desiredLabel}.soul.xyz`)
+            );
+            expect(subdomainOwner).to.eq(ethers.constants.AddressZero);
+        })
+
+        it("does not allow minting with another ERC20", async () => {
+            const admitTwoOwner = await admitTwo.owner();
+            const validOwner = account1.address;
+            expect(owner.address).to.eq(admitTwoOwner);
+
+            const validTokenId = 1;
+            await admitTwo.connect(owner).ownerMint(validOwner, validTokenId);
+            // Check that the balances updated properly.
+            expect(await admitTwo.ownerOf(validTokenId)).to.eq(validOwner);
+            expect(await admitTwo.balanceOf(validOwner)).to.eq(1);
+
+            // Changing to a different contract should not work.
+
+            // Now check that this owner can mint on the contract.
+            let shard = ethers.utils.id("0");
+            let rootName = "soul.xyz";
+            const desiredLabel = "king";
+            const claim = claimData.claims[admitOne.address];
+            const transaction = permissionContract
+                .connect(account1)
+                .registerWithNFTOwnership(
+                    admitTwo.address,
+                    validTokenId,
+                    rootName,
+                    claim.rootNode,
+                    desiredLabel,
+                    shard,
+                    claim.proof
+                );
+
+            await expect(transaction).to.be.revertedWith(
+                "PermissionContract: Invalid proof."
+            );
+
+            const subdomainOwner = await ensRegistry.owner(
+                ethers.utils.namehash(`${desiredLabel}.soul.xyz`)
+            );
+            expect(subdomainOwner).to.eq(ethers.constants.AddressZero);
+        })
     });
 });

@@ -29,11 +29,11 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     "ensRegistrar()": FunctionFragment;
     "feeConfigs(bytes32)": FunctionFragment;
     "getMerkleRoot(bytes32)": FunctionFragment;
-    "isClaimed(bytes32,bytes32)": FunctionFragment;
     "isNextOwner()": FunctionFragment;
     "isOwner()": FunctionFragment;
     "isRootProvider()": FunctionFragment;
     "merkleRoots(bytes32)": FunctionFragment;
+    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])": FunctionFragment;
     "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])": FunctionFragment;
     "registrable()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
@@ -71,10 +71,6 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "isClaimed",
-    values: [BytesLike, BytesLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "isNextOwner",
     values?: undefined
   ): string;
@@ -86,6 +82,18 @@ interface PermissionContractInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "merkleRoots",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "registerWithNFTOwnership",
+    values: [
+      string,
+      BigNumberish,
+      string,
+      BytesLike,
+      string,
+      BytesLike,
+      BytesLike[]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "registerWithProof",
@@ -149,7 +157,6 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     functionFragment: "getMerkleRoot",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "isClaimed", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isNextOwner",
     data: BytesLike
@@ -161,6 +168,10 @@ interface PermissionContractInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "merkleRoots",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "registerWithNFTOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -275,18 +286,6 @@ export class PermissionContract extends Contract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    isClaimed(
-      rootShard: BytesLike,
-      node: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    "isClaimed(bytes32,bytes32)"(
-      rootShard: BytesLike,
-      node: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
     isNextOwner(overrides?: CallOverrides): Promise<[boolean]>;
 
     "isNextOwner()"(overrides?: CallOverrides): Promise<[boolean]>;
@@ -305,6 +304,28 @@ export class PermissionContract extends Contract {
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    registerWithNFTOwnership(
+      nftContract_: string,
+      tokenId: BigNumberish,
+      rootName_: string,
+      rootNode_: BytesLike,
+      label_: string,
+      rootShard_: BytesLike,
+      merkleProof_: BytesLike[],
+      overrides?: PayableOverrides
+    ): Promise<ContractTransaction>;
+
+    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+      nftContract_: string,
+      tokenId: BigNumberish,
+      rootName_: string,
+      rootNode_: BytesLike,
+      label_: string,
+      rootShard_: BytesLike,
+      merkleProof_: BytesLike[],
+      overrides?: PayableOverrides
+    ): Promise<ContractTransaction>;
 
     registerWithProof(
       owner_: string,
@@ -446,18 +467,6 @@ export class PermissionContract extends Contract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  isClaimed(
-    rootShard: BytesLike,
-    node: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  "isClaimed(bytes32,bytes32)"(
-    rootShard: BytesLike,
-    node: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
   isNextOwner(overrides?: CallOverrides): Promise<boolean>;
 
   "isNextOwner()"(overrides?: CallOverrides): Promise<boolean>;
@@ -476,6 +485,28 @@ export class PermissionContract extends Contract {
     arg0: BytesLike,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  registerWithNFTOwnership(
+    nftContract_: string,
+    tokenId: BigNumberish,
+    rootName_: string,
+    rootNode_: BytesLike,
+    label_: string,
+    rootShard_: BytesLike,
+    merkleProof_: BytesLike[],
+    overrides?: PayableOverrides
+  ): Promise<ContractTransaction>;
+
+  "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+    nftContract_: string,
+    tokenId: BigNumberish,
+    rootName_: string,
+    rootNode_: BytesLike,
+    label_: string,
+    rootShard_: BytesLike,
+    merkleProof_: BytesLike[],
+    overrides?: PayableOverrides
+  ): Promise<ContractTransaction>;
 
   registerWithProof(
     owner_: string,
@@ -615,18 +646,6 @@ export class PermissionContract extends Contract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    isClaimed(
-      rootShard: BytesLike,
-      node: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    "isClaimed(bytes32,bytes32)"(
-      rootShard: BytesLike,
-      node: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     isNextOwner(overrides?: CallOverrides): Promise<boolean>;
 
     "isNextOwner()"(overrides?: CallOverrides): Promise<boolean>;
@@ -645,6 +664,28 @@ export class PermissionContract extends Contract {
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    registerWithNFTOwnership(
+      nftContract_: string,
+      tokenId: BigNumberish,
+      rootName_: string,
+      rootNode_: BytesLike,
+      label_: string,
+      rootShard_: BytesLike,
+      merkleProof_: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+      nftContract_: string,
+      tokenId: BigNumberish,
+      rootName_: string,
+      rootNode_: BytesLike,
+      label_: string,
+      rootShard_: BytesLike,
+      merkleProof_: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     registerWithProof(
       owner_: string,
@@ -802,18 +843,6 @@ export class PermissionContract extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    isClaimed(
-      rootShard: BytesLike,
-      node: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "isClaimed(bytes32,bytes32)"(
-      rootShard: BytesLike,
-      node: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     isNextOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
     "isNextOwner()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -831,6 +860,28 @@ export class PermissionContract extends Contract {
     "merkleRoots(bytes32)"(
       arg0: BytesLike,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    registerWithNFTOwnership(
+      nftContract_: string,
+      tokenId: BigNumberish,
+      rootName_: string,
+      rootNode_: BytesLike,
+      label_: string,
+      rootShard_: BytesLike,
+      merkleProof_: BytesLike[],
+      overrides?: PayableOverrides
+    ): Promise<BigNumber>;
+
+    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+      nftContract_: string,
+      tokenId: BigNumberish,
+      rootName_: string,
+      rootNode_: BytesLike,
+      label_: string,
+      rootShard_: BytesLike,
+      merkleProof_: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
     registerWithProof(
@@ -981,18 +1032,6 @@ export class PermissionContract extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    isClaimed(
-      rootShard: BytesLike,
-      node: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "isClaimed(bytes32,bytes32)"(
-      rootShard: BytesLike,
-      node: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     isNextOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "isNextOwner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1015,6 +1054,28 @@ export class PermissionContract extends Contract {
     "merkleRoots(bytes32)"(
       arg0: BytesLike,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    registerWithNFTOwnership(
+      nftContract_: string,
+      tokenId: BigNumberish,
+      rootName_: string,
+      rootNode_: BytesLike,
+      label_: string,
+      rootShard_: BytesLike,
+      merkleProof_: BytesLike[],
+      overrides?: PayableOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+      nftContract_: string,
+      tokenId: BigNumberish,
+      rootName_: string,
+      rootNode_: BytesLike,
+      label_: string,
+      rootShard_: BytesLike,
+      merkleProof_: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
     registerWithProof(
