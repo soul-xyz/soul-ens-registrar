@@ -31,11 +31,13 @@ interface ENSRegistrarInterface extends ethers.utils.Interface {
     "originalOwner(bytes32)": FunctionFragment;
     "owner()": FunctionFragment;
     "permissionContract()": FunctionFragment;
-    "register(string,bytes32,string,address)": FunctionFragment;
+    "register(bytes32,string,address)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "restoreOwner(bytes32)": FunctionFragment;
+    "setSubdomainTransferable(bytes32,bool)": FunctionFragment;
     "storeCurrentOwner(bytes32)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "transferable(bytes32)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -73,7 +75,7 @@ interface ENSRegistrarInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "register",
-    values: [string, BytesLike, string, string]
+    values: [BytesLike, string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -84,12 +86,20 @@ interface ENSRegistrarInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setSubdomainTransferable",
+    values: [BytesLike, boolean]
+  ): string;
+  encodeFunctionData(
     functionFragment: "storeCurrentOwner",
     values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferable",
+    values: [BytesLike]
   ): string;
 
   decodeFunctionResult(
@@ -132,11 +142,19 @@ interface ENSRegistrarInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setSubdomainTransferable",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "storeCurrentOwner",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferable",
     data: BytesLike
   ): Result;
 
@@ -145,6 +163,7 @@ interface ENSRegistrarInterface extends ethers.utils.Interface {
     "PermissionContractChange(address,address)": EventFragment;
     "RegisteredENS(address,string)": EventFragment;
     "RootNodeOwnerChange(bytes32,address)": EventFragment;
+    "TransferableUpdated(bytes32,bool)": EventFragment;
     "UpdatedENS(address,bytes32)": EventFragment;
   };
 
@@ -152,6 +171,7 @@ interface ENSRegistrarInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "PermissionContractChange"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RegisteredENS"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RootNodeOwnerChange"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TransferableUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "UpdatedENS"): EventFragment;
 }
 
@@ -244,15 +264,13 @@ export class ENSRegistrar extends Contract {
     "permissionContract()"(overrides?: CallOverrides): Promise<[string]>;
 
     register(
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
+    "register(bytes32,string,address)"(
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
@@ -270,6 +288,18 @@ export class ENSRegistrar extends Contract {
 
     "restoreOwner(bytes32)"(
       node: BytesLike,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setSubdomainTransferable(
+      node: BytesLike,
+      transferable_: boolean,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setSubdomainTransferable(bytes32,bool)"(
+      node: BytesLike,
+      transferable_: boolean,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -292,6 +322,16 @@ export class ENSRegistrar extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    transferable(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "transferable(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
   };
 
   changeLabelOwner(
@@ -366,15 +406,13 @@ export class ENSRegistrar extends Contract {
   "permissionContract()"(overrides?: CallOverrides): Promise<string>;
 
   register(
-    rootName_: string,
     rootNode_: BytesLike,
     label_: string,
     owner_: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "register(string,bytes32,string,address)"(
-    rootName_: string,
+  "register(bytes32,string,address)"(
     rootNode_: BytesLike,
     label_: string,
     owner_: string,
@@ -392,6 +430,18 @@ export class ENSRegistrar extends Contract {
 
   "restoreOwner(bytes32)"(
     node: BytesLike,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setSubdomainTransferable(
+    node: BytesLike,
+    transferable_: boolean,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setSubdomainTransferable(bytes32,bool)"(
+    node: BytesLike,
+    transferable_: boolean,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -414,6 +464,13 @@ export class ENSRegistrar extends Contract {
     newOwner: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
+
+  transferable(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>;
+
+  "transferable(bytes32)"(
+    arg0: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   callStatic: {
     changeLabelOwner(
@@ -488,15 +545,13 @@ export class ENSRegistrar extends Contract {
     "permissionContract()"(overrides?: CallOverrides): Promise<string>;
 
     register(
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
+    "register(bytes32,string,address)"(
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
@@ -511,6 +566,18 @@ export class ENSRegistrar extends Contract {
 
     "restoreOwner(bytes32)"(
       node: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setSubdomainTransferable(
+      node: BytesLike,
+      transferable_: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setSubdomainTransferable(bytes32,bool)"(
+      node: BytesLike,
+      transferable_: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -533,6 +600,13 @@ export class ENSRegistrar extends Contract {
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    transferable(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>;
+
+    "transferable(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
   };
 
   filters: {
@@ -552,6 +626,8 @@ export class ENSRegistrar extends Contract {
       node: BytesLike | null,
       owner: string | null
     ): EventFilter;
+
+    TransferableUpdated(node: null, transferable: null): EventFilter;
 
     UpdatedENS(_owner: string | null, node: BytesLike | null): EventFilter;
   };
@@ -632,15 +708,13 @@ export class ENSRegistrar extends Contract {
     "permissionContract()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     register(
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
+    "register(bytes32,string,address)"(
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
@@ -655,6 +729,18 @@ export class ENSRegistrar extends Contract {
 
     "restoreOwner(bytes32)"(
       node: BytesLike,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setSubdomainTransferable(
+      node: BytesLike,
+      transferable_: boolean,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setSubdomainTransferable(bytes32,bool)"(
+      node: BytesLike,
+      transferable_: boolean,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -676,6 +762,16 @@ export class ENSRegistrar extends Contract {
     "transferOwnership(address)"(
       newOwner: string,
       overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    transferable(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "transferable(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
@@ -759,15 +855,13 @@ export class ENSRegistrar extends Contract {
     ): Promise<PopulatedTransaction>;
 
     register(
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
+    "register(bytes32,string,address)"(
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
@@ -785,6 +879,18 @@ export class ENSRegistrar extends Contract {
 
     "restoreOwner(bytes32)"(
       node: BytesLike,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setSubdomainTransferable(
+      node: BytesLike,
+      transferable_: boolean,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setSubdomainTransferable(bytes32,bool)"(
+      node: BytesLike,
+      transferable_: boolean,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -806,6 +912,16 @@ export class ENSRegistrar extends Contract {
     "transferOwnership(address)"(
       newOwner: string,
       overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    transferable(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "transferable(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

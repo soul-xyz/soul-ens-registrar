@@ -26,7 +26,7 @@ interface IENSRegistrarInterface extends ethers.utils.Interface {
     "changePermissionContract(address)": FunctionFragment;
     "changeRootNodeOwner(bytes32,address)": FunctionFragment;
     "labelOwner(bytes32,string)": FunctionFragment;
-    "register(string,bytes32,string,address)": FunctionFragment;
+    "register(bytes32,string,address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -47,7 +47,7 @@ interface IENSRegistrarInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "register",
-    values: [string, BytesLike, string, string]
+    values: [BytesLike, string, string]
   ): string;
 
   decodeFunctionResult(
@@ -131,15 +131,13 @@ export class IENSRegistrar extends Contract {
     ): Promise<[string]>;
 
     register(
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
+    "register(bytes32,string,address)"(
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
@@ -196,15 +194,13 @@ export class IENSRegistrar extends Contract {
   ): Promise<string>;
 
   register(
-    rootName_: string,
     rootNode_: BytesLike,
     label_: string,
     owner_: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "register(string,bytes32,string,address)"(
-    rootName_: string,
+  "register(bytes32,string,address)"(
     rootNode_: BytesLike,
     label_: string,
     owner_: string,
@@ -261,15 +257,13 @@ export class IENSRegistrar extends Contract {
     ): Promise<string>;
 
     register(
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
+    "register(bytes32,string,address)"(
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
@@ -329,15 +323,13 @@ export class IENSRegistrar extends Contract {
     ): Promise<BigNumber>;
 
     register(
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
+    "register(bytes32,string,address)"(
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
@@ -395,15 +387,13 @@ export class IENSRegistrar extends Contract {
     ): Promise<PopulatedTransaction>;
 
     register(
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       owner_: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
+    "register(bytes32,string,address)"(
       rootNode_: BytesLike,
       label_: string,
       owner_: string,

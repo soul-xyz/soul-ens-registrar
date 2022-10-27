@@ -5,7 +5,6 @@ interface IENSRegistrar {
     function changeRootNodeOwner(bytes32 rootNode_, address _newOwner) external;
 
     function register(
-        string memory rootName_,
         bytes32 rootNode_,
         string calldata label_,
         address owner_

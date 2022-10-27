@@ -67,7 +67,7 @@ contract ENSRegistrar is IENSRegistrar, Ownable {
         address ensRegistry_,
         address ensResolver_,
         address permissionContract_
-    ) public {
+    ) {
         permissionContract = permissionContract_;
 
         // Registrations are cheaper if these are instantiated.
@@ -92,14 +92,12 @@ contract ENSRegistrar is IENSRegistrar, Ownable {
     /**
      * @notice Assigns an ENS subdomain of the root node to a target address.
      * Registers both the forward. Can only be called by writeToken.
-     * @param rootName_ The root name (e.g. 9dcc.eth).
      * @param rootNode_ The node of the root name (e.g. namehash(9dcc.eth)).
      * @param label_ The subdomain label.
      * @param owner_ The owner of the subdomain.
      */
 
     function register(
-        string memory rootName_,
         bytes32 rootNode_,
         string calldata label_,
         address owner_
@@ -176,7 +174,7 @@ contract ENSRegistrar is IENSRegistrar, Ownable {
         require(msg.sender == originalOwner[node], "ENSRegistrar: can only be called by original owner");
 
         transferable[node] = transferable_;
-        emit TransferableUpdated(rootNode, transferable_);
+        emit TransferableUpdated(node, transferable_);
     }
 
     function changeLabelOwner(bytes32 rootNode_, string calldata label_, address newOwner_)

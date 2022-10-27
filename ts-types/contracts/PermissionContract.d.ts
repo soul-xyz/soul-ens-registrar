@@ -33,8 +33,8 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     "isOwner()": FunctionFragment;
     "isRootProvider()": FunctionFragment;
     "merkleRoots(bytes32)": FunctionFragment;
-    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])": FunctionFragment;
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])": FunctionFragment;
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])": FunctionFragment;
+    "registerWithProof(address,bytes32,string,bytes32,bytes32[])": FunctionFragment;
     "registrable()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setCommissionBips(uint256)": FunctionFragment;
@@ -85,19 +85,11 @@ interface PermissionContractInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "registerWithNFTOwnership",
-    values: [
-      string,
-      BigNumberish,
-      string,
-      BytesLike,
-      string,
-      BytesLike,
-      BytesLike[]
-    ]
+    values: [string, BigNumberish, BytesLike, string, BytesLike, BytesLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "registerWithProof",
-    values: [string, string, BytesLike, string, BytesLike, BytesLike[]]
+    values: [string, BytesLike, string, BytesLike, BytesLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "registrable",
@@ -308,7 +300,6 @@ export class PermissionContract extends Contract {
     registerWithNFTOwnership(
       nftContract_: string,
       tokenId: BigNumberish,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -316,10 +307,9 @@ export class PermissionContract extends Contract {
       overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
       nftContract_: string,
       tokenId: BigNumberish,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -329,7 +319,6 @@ export class PermissionContract extends Contract {
 
     registerWithProof(
       owner_: string,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -337,9 +326,8 @@ export class PermissionContract extends Contract {
       overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
+    "registerWithProof(address,bytes32,string,bytes32,bytes32[])"(
       owner_: string,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -489,7 +477,6 @@ export class PermissionContract extends Contract {
   registerWithNFTOwnership(
     nftContract_: string,
     tokenId: BigNumberish,
-    rootName_: string,
     rootNode_: BytesLike,
     label_: string,
     rootShard_: BytesLike,
@@ -497,10 +484,9 @@ export class PermissionContract extends Contract {
     overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+  "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
     nftContract_: string,
     tokenId: BigNumberish,
-    rootName_: string,
     rootNode_: BytesLike,
     label_: string,
     rootShard_: BytesLike,
@@ -510,7 +496,6 @@ export class PermissionContract extends Contract {
 
   registerWithProof(
     owner_: string,
-    rootName_: string,
     rootNode_: BytesLike,
     label_: string,
     rootShard_: BytesLike,
@@ -518,9 +503,8 @@ export class PermissionContract extends Contract {
     overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
+  "registerWithProof(address,bytes32,string,bytes32,bytes32[])"(
     owner_: string,
-    rootName_: string,
     rootNode_: BytesLike,
     label_: string,
     rootShard_: BytesLike,
@@ -668,7 +652,6 @@ export class PermissionContract extends Contract {
     registerWithNFTOwnership(
       nftContract_: string,
       tokenId: BigNumberish,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -676,10 +659,9 @@ export class PermissionContract extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
       nftContract_: string,
       tokenId: BigNumberish,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -689,7 +671,6 @@ export class PermissionContract extends Contract {
 
     registerWithProof(
       owner_: string,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -697,9 +678,8 @@ export class PermissionContract extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
+    "registerWithProof(address,bytes32,string,bytes32,bytes32[])"(
       owner_: string,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -865,7 +845,6 @@ export class PermissionContract extends Contract {
     registerWithNFTOwnership(
       nftContract_: string,
       tokenId: BigNumberish,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -873,10 +852,9 @@ export class PermissionContract extends Contract {
       overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
       nftContract_: string,
       tokenId: BigNumberish,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -886,7 +864,6 @@ export class PermissionContract extends Contract {
 
     registerWithProof(
       owner_: string,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -894,9 +871,8 @@ export class PermissionContract extends Contract {
       overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
+    "registerWithProof(address,bytes32,string,bytes32,bytes32[])"(
       owner_: string,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -1059,7 +1035,6 @@ export class PermissionContract extends Contract {
     registerWithNFTOwnership(
       nftContract_: string,
       tokenId: BigNumberish,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -1067,10 +1042,9 @@ export class PermissionContract extends Contract {
       overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])"(
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
       nftContract_: string,
       tokenId: BigNumberish,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -1080,7 +1054,6 @@ export class PermissionContract extends Contract {
 
     registerWithProof(
       owner_: string,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,
@@ -1088,9 +1061,8 @@ export class PermissionContract extends Contract {
       overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
+    "registerWithProof(address,bytes32,string,bytes32,bytes32[])"(
       owner_: string,
-      rootName_: string,
       rootNode_: BytesLike,
       label_: string,
       rootShard_: BytesLike,

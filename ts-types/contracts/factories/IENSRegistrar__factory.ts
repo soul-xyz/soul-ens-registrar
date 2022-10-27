@@ -98,11 +98,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "string",
-        name: "rootName_",
-        type: "string",
-      },
-      {
         internalType: "bytes32",
         name: "rootNode_",
         type: "bytes32",

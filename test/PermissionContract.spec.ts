@@ -4,7 +4,7 @@ import {ethers, waffle} from "hardhat";
 
 import setup from "./setup";
 import {parseBalanceMap} from "../merkle-distribution/parse-balance-map";
-import {getAddress} from "ethers/lib/utils";
+import {getAddress, namehash} from "ethers/lib/utils";
 
 describe("PermissionContract", () => {
     // Contracts
@@ -178,7 +178,6 @@ describe("PermissionContract", () => {
         }
 
         let shard = ethers.utils.id("0");
-        let rootName = "soul.xyz";
 
         // Quick detour here...
         describe("ENSRegistry", () => {
@@ -226,7 +225,6 @@ describe("PermissionContract", () => {
                     .connect(account1)
                     .registerWithProof(
                         claimer,
-                        rootName,
                         firstClaim.rootNode,
                         firstClaim.label,
                         incorrectShard,
@@ -268,7 +266,6 @@ describe("PermissionContract", () => {
                         .connect(account1)
                         .registerWithProof(
                             claimer,
-                            rootName,
                             firstClaim.rootNode,
                             firstClaim.label,
                             shard,
@@ -296,7 +293,6 @@ describe("PermissionContract", () => {
                         .connect(account1)
                         .registerWithProof(
                             claimer,
-                            rootName,
                             firstClaim.rootNode,
                             firstClaim.label,
                             shard,
@@ -313,7 +309,6 @@ describe("PermissionContract", () => {
                         .connect(account1)
                         .registerWithProof(
                             claimer,
-                            rootName,
                             firstClaim.rootNode,
                             firstClaim.label,
                             shard,
@@ -337,7 +332,6 @@ describe("PermissionContract", () => {
                         .connect(account1)
                         .registerWithProof(
                             claimer,
-                            rootName,
                             firstClaim.rootNode,
                             firstClaim.label,
                             shard,
@@ -359,7 +353,6 @@ describe("PermissionContract", () => {
                         .connect(account1)
                         .registerWithProof(
                             claimer,
-                            rootName,
                             firstClaim.rootNode,
                             firstClaim.label,
                             shard,
@@ -377,7 +370,6 @@ describe("PermissionContract", () => {
                         .connect(account1)
                         .registerWithProof(
                             claimer,
-                            rootName,
                             firstClaim.rootNode,
                             firstClaim.label,
                             shard,
@@ -399,7 +391,6 @@ describe("PermissionContract", () => {
                         .connect(account1)
                         .registerWithProof(
                             claimers[1],
-                            rootName,
                             firstClaim.rootNode,
                             firstClaim.label,
                             shard,
@@ -452,19 +443,19 @@ describe("PermissionContract", () => {
         let merkleTreeInputs;
         let claimData;
         let shard = ethers.utils.id("0");
-        let rootName = "soul.xyz";
 
         beforeEach(async () => {
+            const rootNode = ethers.utils.namehash("soul.xyz"),;
             merkleTreeInputs = [
                 {
                     "owner": "0x012A4ddc4A4f669bAa7327A589F8bDc5e8b494A4",
-                    "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+                    "rootNode": rootNode,
                     "label": "test"
                 },
                 {
                     // Owner is a contract here.
                     "owner": admitOne.address,
-                    "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+                    "rootNode": rootNode,
                     // Here a label being * means that it's a contract.
                     "label": "*"
                 }
@@ -491,7 +482,6 @@ describe("PermissionContract", () => {
             expect(await admitOne.balanceOf(validOwner)).to.eq(1);
             // Now check that this owner can mint on the contract.
             let shard = ethers.utils.id("0");
-            let rootName = "soul.xyz";
             const desiredLabel = "king";
             const claimer = validOwner;
             const claim = claimData.claims[admitOne.address];
@@ -500,7 +490,6 @@ describe("PermissionContract", () => {
                 .registerWithNFTOwnership(
                     admitOne.address,
                     tokenId,
-                    rootName,
                     claim.rootNode,
                     desiredLabel,
                     shard,
@@ -520,7 +509,6 @@ describe("PermissionContract", () => {
                 .registerWithNFTOwnership(
                     admitOne.address,
                     tokenId,
-                    rootName,
                     claim.rootNode,
                     `${desiredLabel}b`,
                     shard,
@@ -548,7 +536,6 @@ describe("PermissionContract", () => {
 
             // Now check that this owner can mint on the contract.
             let shard = ethers.utils.id("0");
-            let rootName = "soul.xyz";
             const desiredLabel = "king";
             const claim = claimData.claims[admitOne.address];
             const transaction = permissionContract
@@ -556,7 +543,6 @@ describe("PermissionContract", () => {
                 .registerWithNFTOwnership(
                     admitOne.address,
                     invalidTokenId,
-                    rootName,
                     claim.rootNode,
                     desiredLabel,
                     shard,
@@ -588,7 +574,6 @@ describe("PermissionContract", () => {
 
             // Now check that this owner can mint on the contract.
             let shard = ethers.utils.id("0");
-            let rootName = "soul.xyz";
             const desiredLabel = "king";
             const claim = claimData.claims[admitOne.address];
             const transaction = permissionContract
@@ -596,7 +581,6 @@ describe("PermissionContract", () => {
                 .registerWithNFTOwnership(
                     admitTwo.address,
                     validTokenId,
-                    rootName,
                     claim.rootNode,
                     desiredLabel,
                     shard,

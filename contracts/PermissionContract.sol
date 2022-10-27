@@ -100,7 +100,6 @@ contract PermissionContract {
     /**
      * Burns the sender's invite tokens and registers an ENS given label to a given address.
      * @param owner_ The address that should own the label.
-     * @param rootName_ The name of the ens root
      * @param rootNode_ The hashed node for the ens root
      * @param label_ The user's ENS label, e.g. "admin" for admin.soul.xyz.
      * @param rootShard_ The merkle proof shard
@@ -108,7 +107,6 @@ contract PermissionContract {
      */
     function registerWithProof(
         address owner_,
-        string memory rootName_,
         bytes32 rootNode_,
         string calldata label_,
         bytes32 rootShard_,
@@ -142,7 +140,6 @@ contract PermissionContract {
 
         // Register the node.
         IENSRegistrar(ensRegistrar).register(
-            rootName_,
             rootNode_,
             label_,
             owner_
@@ -153,7 +150,6 @@ contract PermissionContract {
     function registerWithNFTOwnership(
         address nftContract_,
         uint256 tokenId,
-        string memory rootName_,
         bytes32 rootNode_,
         string calldata label_,
         bytes32 rootShard_,
@@ -185,7 +181,6 @@ contract PermissionContract {
 
         // Register the node.
         IENSRegistrar(ensRegistrar).register(
-            rootName_,
             rootNode_,
             label_,
             msg.sender
