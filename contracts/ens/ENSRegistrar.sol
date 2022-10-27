@@ -30,12 +30,16 @@ contract ENSRegistrar is IENSRegistrar, Ownable {
 
     mapping(bytes32 => address) public originalOwner;
 
+    // Root node => subdomain transferable
+    mapping(bytes32 => bool) public transferable;
+
     // ============ Events ============
 
     event PermissionContractChange(address permissionContract, address _newPermissionContract);
     event RootNodeOwnerChange(bytes32 indexed node, address indexed owner);
     event RegisteredENS(address indexed _owner, string _ens);
     event UpdatedENS(address indexed _owner, bytes32 indexed node);
+    event TransferableUpdated(bytes32 node, bool transferable);
 
     // ============ Modifiers ============
 
@@ -143,9 +147,9 @@ contract ENSRegistrar is IENSRegistrar, Ownable {
     }
 
     function changePermissionContract(address _newPermissionContract)
-    external
-    override
-    onlyOwner
+        external
+        override
+        onlyOwner
     {
         emit PermissionContractChange(permissionContract, _newPermissionContract);
         permissionContract = _newPermissionContract;
@@ -165,12 +169,27 @@ contract ENSRegistrar is IENSRegistrar, Ownable {
         return ensRegistry.owner(node);
     }
 
+    /**
+     * Allows the root owner to enable or disable subdomain's transferability
+     */
+    function setSubdomainTransferable(bytes32 node, bool transferable_) external {
+        require(msg.sender == originalOwner[node], "ENSRegistrar: can only be called by original owner");
+
+        transferable[node] = transferable_;
+        emit TransferableUpdated(rootNode, transferable_);
+    }
+
     function changeLabelOwner(bytes32 rootNode_, string calldata label_, address newOwner_)
         external
         override
     {
         bytes32 labelNode = keccak256(abi.encodePacked(label_));
         bytes32 node = keccak256(abi.encodePacked(rootNode_, labelNode));
+
+        require(
+            transferable[node],
+            "ENSRegistrar: subdomain is not transferable"
+        );
 
         require(
             ensRegistry.owner(node) == msg.sender,
