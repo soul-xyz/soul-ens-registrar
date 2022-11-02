@@ -225,12 +225,12 @@ describe("PermissionContract", () => {
                 const transaction = permissionContract
                     .connect(account1)
                     .registerWithProof(
-                        claimer,
                         rootName,
                         firstClaim.rootNode,
-                        firstClaim.label,
                         incorrectShard,
-                        firstClaim.proof
+                        [claimer],
+                        [firstClaim.label],
+                        [firstClaim.proof]
                     );
                 await expect(transaction).to.be.revertedWith("PermissionContract: Invalid proof.");
             });
@@ -267,12 +267,12 @@ describe("PermissionContract", () => {
                     const transaction = permissionContract
                         .connect(account1)
                         .registerWithProof(
-                            claimer,
                             rootName,
                             firstClaim.rootNode,
-                            firstClaim.label,
                             shard,
-                            firstClaim.proof
+                            [claimer],
+                            [firstClaim.label],
+                            [firstClaim.proof]
                         );
 
                     await expect(transaction).to.be.revertedWith(
@@ -295,12 +295,12 @@ describe("PermissionContract", () => {
                     const transaction = permissionContract
                         .connect(account1)
                         .registerWithProof(
-                            claimer,
                             rootName,
                             firstClaim.rootNode,
-                            firstClaim.label,
                             shard,
-                            firstClaim.proof,
+                            [claimer],
+                            [firstClaim.label],
+                            [firstClaim.proof],
                             {value: ethers.utils.parseEther('0.001')}
                         );
                     await expect(transaction).to.emit(permissionContract, "Transfer");
@@ -312,12 +312,12 @@ describe("PermissionContract", () => {
                     const transaction = permissionContract
                         .connect(account1)
                         .registerWithProof(
-                            claimer,
                             rootName,
                             firstClaim.rootNode,
-                            firstClaim.label,
                             shard,
-                            firstClaim.proof
+                            [claimer],
+                            [firstClaim.label],
+                            [firstClaim.proof]
                         );
 
                     await expect(transaction).not.to.be.reverted;
@@ -336,12 +336,12 @@ describe("PermissionContract", () => {
                     const transaction = permissionContract
                         .connect(account1)
                         .registerWithProof(
-                            claimer,
                             rootName,
                             firstClaim.rootNode,
-                            firstClaim.label,
                             shard,
-                            firstClaim.proof
+                            [claimer],
+                            [firstClaim.label],
+                            [firstClaim.proof]
                         );
 
                     await expect(transaction).to.be.revertedWith("PermissionContract: registration is closed.");
@@ -358,12 +358,12 @@ describe("PermissionContract", () => {
                     let transaction = permissionContract
                         .connect(account1)
                         .registerWithProof(
-                            claimer,
                             rootName,
                             firstClaim.rootNode,
-                            firstClaim.label,
                             shard,
-                            firstClaim.proof
+                            [claimer],
+                            [firstClaim.label],
+                            [firstClaim.proof]
                         );
 
                     await expect(transaction).not.to.be.reverted;
@@ -376,12 +376,12 @@ describe("PermissionContract", () => {
                     transaction = permissionContract
                         .connect(account1)
                         .registerWithProof(
-                            claimer,
                             rootName,
                             firstClaim.rootNode,
-                            firstClaim.label,
                             shard,
-                            firstClaim.proof
+                            [claimer],
+                            [firstClaim.label],
+                            [firstClaim.proof]
                         );
 
                     await expect(transaction).to.be.revertedWith("ENSRegistrar: label is already owned");
@@ -398,12 +398,12 @@ describe("PermissionContract", () => {
                     let transaction = permissionContract
                         .connect(account1)
                         .registerWithProof(
-                            claimers[1],
                             rootName,
                             firstClaim.rootNode,
-                            firstClaim.label,
                             shard,
-                            firstClaim.proof
+                            [claimers[1]],
+                            [firstClaim.label],
+                            [firstClaim.proof]
                         );
 
                     await expect(transaction).to.be.revertedWith("PermissionContract: Invalid proof.");
