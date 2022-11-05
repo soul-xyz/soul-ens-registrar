@@ -240,6 +240,7 @@ describe("PermissionContract", () => {
             const claimers = Object.keys(claimData.claims);
             const claimer = claimers[0];
             const firstClaim = claimData.claims[claimer];
+            const secondClaim = claimData.claims[claimers[1]];
 
             // // let transaction;
             // // let receipt;
@@ -326,6 +327,48 @@ describe("PermissionContract", () => {
                         ethers.utils.namehash(`${firstClaim.label}.soul.xyz`)
                     );
                     expect(subdomainOwner).to.eq(claimer);
+                });
+
+                describe.only(" for bulk claiming", () => {
+                    it("reverts with unmatched input", async () => {
+                        const transaction = permissionContract
+                            .connect(account1)
+                            .registerWithProof(
+                                rootName,
+                                firstClaim.rootNode,
+                                shard,
+                                claimers,
+                                [firstClaim.label],
+                                [firstClaim.proof, secondClaim.proof]
+                            );
+
+                        await expect(transaction).to.be.revertedWith("PermissionContract: invalid params");
+                    });
+
+                    it("registers all the subdomains", async () => {
+                        const transaction = permissionContract
+                            .connect(account1)
+                            .registerWithProof(
+                                rootName,
+                                firstClaim.rootNode,
+                                shard,
+                                claimers,
+                                [firstClaim.label, secondClaim.label],
+                                [firstClaim.proof, secondClaim.proof]
+                            );
+
+                        await expect(transaction).not.to.be.reverted;
+
+                        const subdomainFirstOwner = await ensRegistry.owner(
+                            ethers.utils.namehash(`${firstClaim.label}.soul.xyz`)
+                        );
+                        expect(subdomainFirstOwner).to.eq(claimers[0]);
+
+                        const subdomainSecondOwner = await ensRegistry.owner(
+                            ethers.utils.namehash(`${secondClaim.label}.soul.xyz`)
+                        );
+                        expect(subdomainSecondOwner).to.eq(claimers[1]);
+                    });
                 });
             });
 
