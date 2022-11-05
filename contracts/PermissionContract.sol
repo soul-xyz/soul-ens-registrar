@@ -99,35 +99,63 @@ contract PermissionContract {
 
     /**
      * Burns the sender's invite tokens and registers an ENS given label to a given address.
-     * @param owner_ The address that should own the label.
      * @param rootName_ The name of the ens root
      * @param rootNode_ The hashed node for the ens root
-     * @param label_ The user's ENS label, e.g. "admin" for admin.soul.xyz.
      * @param rootShard_ The merkle proof shard
-     * @param merkleProof_ The merkle proof
+     * @param owners_ The list of addresses that should own the labels.
+     * @param labels_ The list of ENS labels, e.g. "admin" for admin.soul.xyz.
+     * @param merkleProofs_ The list of merkle proof
      */
+
     function registerWithProof(
-        address owner_,
         string memory rootName_,
         bytes32 rootNode_,
-        string calldata label_,
         bytes32 rootShard_,
-        bytes32[] calldata merkleProof_
+        address[] calldata owners_,
+        string[] calldata labels_,
+        bytes32[][] calldata merkleProofs_
     )
         external
         payable
         canRegister
     {
+        require(
+            owners_.length == labels_.length && owners_.length == merkleProofs_.length,
+            "PermissionContract: invalid params"
+        );
+
         // Check the registration fee
         NodeFeeConfig memory feeConfig = feeConfigs[rootNode_];
         require(msg.value >= feeConfig.fee, "PermissionContract: registration fee required");
 
-        uint256 payout = feeConfig.fee * (10000 - commissionBips) / 10000;
+        uint256 payout = feeConfig.fee * (10000 - commissionBips) / 10000 * owners_.length;
         if (payout > 0) {
             _sendFunds(feeConfig.recipient, payout);
             emit Transfer(address(this), feeConfig.recipient, payout);
         }
 
+        for (uint i = 0; i < owners_.length; i++) {
+            _registerWithProof(
+                rootName_,
+                rootNode_,
+                rootShard_,
+                owners_[i],
+                labels_[i],
+                merkleProofs_[i]
+            );
+        }
+    }
+
+    function _registerWithProof (
+        string memory rootName_,
+        bytes32 rootNode_,
+        bytes32 rootShard_,
+        address owner_,
+        string calldata label_,
+        bytes32[] calldata merkleProof_
+    )
+        private
+    {
         // Verify the merkle proof.
         require(
             MerkleProof.verify(

@@ -34,7 +34,7 @@ interface PermissionContractInterface extends ethers.utils.Interface {
     "isRootProvider()": FunctionFragment;
     "merkleRoots(bytes32)": FunctionFragment;
     "registerWithNFTOwnership(address,uint256,string,bytes32,string,bytes32,bytes32[])": FunctionFragment;
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])": FunctionFragment;
+    "registerWithProof(string,bytes32,bytes32,address[],string[],bytes32[][])": FunctionFragment;
     "registrable()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setCommissionBips(uint256)": FunctionFragment;
@@ -97,7 +97,7 @@ interface PermissionContractInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "registerWithProof",
-    values: [string, string, BytesLike, string, BytesLike, BytesLike[]]
+    values: [string, BytesLike, BytesLike, string[], string[], BytesLike[][]]
   ): string;
   encodeFunctionData(
     functionFragment: "registrable",
@@ -328,22 +328,22 @@ export class PermissionContract extends Contract {
     ): Promise<ContractTransaction>;
 
     registerWithProof(
-      owner_: string,
       rootName_: string,
       rootNode_: BytesLike,
-      label_: string,
       rootShard_: BytesLike,
-      merkleProof_: BytesLike[],
+      owners_: string[],
+      labels_: string[],
+      merkleProofs_: BytesLike[][],
       overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
-      owner_: string,
+    "registerWithProof(string,bytes32,bytes32,address[],string[],bytes32[][])"(
       rootName_: string,
       rootNode_: BytesLike,
-      label_: string,
       rootShard_: BytesLike,
-      merkleProof_: BytesLike[],
+      owners_: string[],
+      labels_: string[],
+      merkleProofs_: BytesLike[][],
       overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
@@ -509,22 +509,22 @@ export class PermissionContract extends Contract {
   ): Promise<ContractTransaction>;
 
   registerWithProof(
-    owner_: string,
     rootName_: string,
     rootNode_: BytesLike,
-    label_: string,
     rootShard_: BytesLike,
-    merkleProof_: BytesLike[],
+    owners_: string[],
+    labels_: string[],
+    merkleProofs_: BytesLike[][],
     overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
-    owner_: string,
+  "registerWithProof(string,bytes32,bytes32,address[],string[],bytes32[][])"(
     rootName_: string,
     rootNode_: BytesLike,
-    label_: string,
     rootShard_: BytesLike,
-    merkleProof_: BytesLike[],
+    owners_: string[],
+    labels_: string[],
+    merkleProofs_: BytesLike[][],
     overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
@@ -688,22 +688,22 @@ export class PermissionContract extends Contract {
     ): Promise<void>;
 
     registerWithProof(
-      owner_: string,
       rootName_: string,
       rootNode_: BytesLike,
-      label_: string,
       rootShard_: BytesLike,
-      merkleProof_: BytesLike[],
+      owners_: string[],
+      labels_: string[],
+      merkleProofs_: BytesLike[][],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
-      owner_: string,
+    "registerWithProof(string,bytes32,bytes32,address[],string[],bytes32[][])"(
       rootName_: string,
       rootNode_: BytesLike,
-      label_: string,
       rootShard_: BytesLike,
-      merkleProof_: BytesLike[],
+      owners_: string[],
+      labels_: string[],
+      merkleProofs_: BytesLike[][],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -885,22 +885,22 @@ export class PermissionContract extends Contract {
     ): Promise<BigNumber>;
 
     registerWithProof(
-      owner_: string,
       rootName_: string,
       rootNode_: BytesLike,
-      label_: string,
       rootShard_: BytesLike,
-      merkleProof_: BytesLike[],
+      owners_: string[],
+      labels_: string[],
+      merkleProofs_: BytesLike[][],
       overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
-      owner_: string,
+    "registerWithProof(string,bytes32,bytes32,address[],string[],bytes32[][])"(
       rootName_: string,
       rootNode_: BytesLike,
-      label_: string,
       rootShard_: BytesLike,
-      merkleProof_: BytesLike[],
+      owners_: string[],
+      labels_: string[],
+      merkleProofs_: BytesLike[][],
       overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
@@ -1079,22 +1079,22 @@ export class PermissionContract extends Contract {
     ): Promise<PopulatedTransaction>;
 
     registerWithProof(
-      owner_: string,
       rootName_: string,
       rootNode_: BytesLike,
-      label_: string,
       rootShard_: BytesLike,
-      merkleProof_: BytesLike[],
+      owners_: string[],
+      labels_: string[],
+      merkleProofs_: BytesLike[][],
       overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "registerWithProof(address,string,bytes32,string,bytes32,bytes32[])"(
-      owner_: string,
+    "registerWithProof(string,bytes32,bytes32,address[],string[],bytes32[][])"(
       rootName_: string,
       rootNode_: BytesLike,
-      label_: string,
       rootShard_: BytesLike,
-      merkleProof_: BytesLike[],
+      owners_: string[],
+      labels_: string[],
+      merkleProofs_: BytesLike[][],
       overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
