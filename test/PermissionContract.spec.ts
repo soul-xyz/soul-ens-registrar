@@ -329,7 +329,7 @@ describe("PermissionContract", () => {
                     expect(subdomainOwner).to.eq(claimer);
                 });
 
-                describe.only(" for bulk claiming", () => {
+                describe(" for bulk claiming", () => {
                     it("reverts with unmatched input", async () => {
                         const transaction = permissionContract
                             .connect(account1)
