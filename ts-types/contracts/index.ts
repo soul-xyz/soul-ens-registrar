@@ -23,7 +23,6 @@ export type { IERC721Royalties } from "./IERC721Royalties";
 export type { IOwnable } from "./IOwnable";
 export type { IOwnableEvents } from "./IOwnableEvents";
 export type { Ownable } from "./Ownable";
-export type { PermissionContract } from "./PermissionContract";
 export type { SoulRegistrar } from "./SoulRegistrar";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
@@ -48,5 +47,4 @@ export { IERC721Royalties__factory } from "./factories/IERC721Royalties__factory
 export { IOwnable__factory } from "./factories/IOwnable__factory";
 export { IOwnableEvents__factory } from "./factories/IOwnableEvents__factory";
 export { Ownable__factory } from "./factories/Ownable__factory";
-export { PermissionContract__factory } from "./factories/PermissionContract__factory";
 export { SoulRegistrar__factory } from "./factories/SoulRegistrar__factory";

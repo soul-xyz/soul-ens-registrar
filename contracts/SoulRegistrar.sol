@@ -98,11 +98,11 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
      * @param ensResolver_ The address of the ENS resolver
      */
     constructor(
-        IENS ensRegistry_,
-        IENSResolver ensResolver_
+        address ensRegistry_,
+        address ensResolver_
     ) {
-        ensRegistry = ensRegistry_;
-        ensResolver = ensResolver_;
+        ensRegistry = IENS(ensRegistry_);
+        ensResolver = IENSResolver(ensResolver_);
         setRegistrable(true);
     }
 
