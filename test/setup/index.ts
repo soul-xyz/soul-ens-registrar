@@ -23,6 +23,8 @@ async function setup() {
   );
   await soulRegistrar.deployed();
 
+  await ensResolver.transferOwnership(soulRegistrar.address);
+
   // Setup root.
   await ensRegistry.setSubnodeOwner(
     ZERO_BYTES32,
@@ -38,7 +40,6 @@ async function setup() {
     soulRegistrar.address,
     true
   );
-  await ensResolver.transferOwnership(soulRegistrar.address);
 
   // Deploy Admit One Token.
   const AdmitOne = await ethers.getContractFactory(
