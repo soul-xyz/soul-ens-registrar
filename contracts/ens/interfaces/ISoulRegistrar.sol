@@ -2,13 +2,20 @@
 pragma solidity ^0.8.0;
 
 interface ISoulRegistrar {
-    function register(
-        string memory rootName_,
-        bytes32 rootNode_,
-        string calldata label_,
-        address owner_
-    )
-    external;
+    function registerWithProof(
+        bytes32 rootNode,
+        bytes32 rootShard,
+        address[] calldata receivers,
+        string[] calldata labels,
+        bytes32[][] calldata merkleProofs
+    ) external payable;
 
-    function changePermissionContract(address _newPermissionContract) external;
+    function registerWithNFTOwnership(
+        address nftContract,
+        uint256 tokenId,
+        bytes32 rootNode,
+        string calldata label,
+        bytes32 rootShard,
+        bytes32[] calldata merkleProof
+    ) external payable;
 }

@@ -14,6 +14,7 @@ import {
   Contract,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
@@ -22,19 +23,39 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface SoulRegistrarInterface extends ethers.utils.Interface {
   functions: {
-    "changePermissionContract(address)": FunctionFragment;
+    "acceptOwnership()": FunctionFragment;
+    "claimed(bytes32,bytes32)": FunctionFragment;
+    "commissionBips()": FunctionFragment;
     "ensRegistry()": FunctionFragment;
     "ensResolver()": FunctionFragment;
+    "feeConfigs(bytes32)": FunctionFragment;
+    "merkleRoots(bytes32)": FunctionFragment;
     "owner()": FunctionFragment;
-    "permissionContract()": FunctionFragment;
-    "register(string,bytes32,string,address)": FunctionFragment;
+    "pendingOwner()": FunctionFragment;
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])": FunctionFragment;
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])": FunctionFragment;
+    "registrable()": FunctionFragment;
+    "relayer()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "setCommissionBips(uint256)": FunctionFragment;
+    "setMerkleRoot(bytes32,bytes32)": FunctionFragment;
+    "setRegistrable(bool)": FunctionFragment;
+    "setRegistrationFee(bytes32,tuple)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "withdrawFees(address,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "changePermissionContract",
-    values: [string]
+    functionFragment: "acceptOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "claimed",
+    values: [BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "commissionBips",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "ensRegistry",
@@ -44,26 +65,68 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     functionFragment: "ensResolver",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "feeConfigs",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "merkleRoots",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "permissionContract",
+    functionFragment: "pendingOwner",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "register",
-    values: [string, BytesLike, string, string]
+    functionFragment: "registerWithNFTOwnership",
+    values: [string, BigNumberish, BytesLike, string, BytesLike, BytesLike[]]
   ): string;
+  encodeFunctionData(
+    functionFragment: "registerWithProof",
+    values: [BytesLike, BytesLike, string[], string[], BytesLike[][]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "registrable",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "relayer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setCommissionBips",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMerkleRoot",
+    values: [BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRegistrable",
+    values: [boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRegistrationFee",
+    values: [BytesLike, { recipient: string; fee: BigNumberish }]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawFees",
+    values: [string, BigNumberish]
+  ): string;
 
   decodeFunctionResult(
-    functionFragment: "changePermissionContract",
+    functionFragment: "acceptOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "claimed", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "commissionBips",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -72,32 +135,81 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "ensResolver",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "feeConfigs", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "merkleRoots",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "permissionContract",
+    functionFragment: "pendingOwner",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "register", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "registerWithNFTOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "registerWithProof",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "registrable",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "relayer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCommissionBips",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setMerkleRoot",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setRegistrable",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setRegistrationFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawFees",
+    data: BytesLike
+  ): Result;
 
   events: {
+    "CommissionBipsUpdated(uint256)": EventFragment;
+    "FeePayout(address,address,uint256)": EventFragment;
+    "FeeUpdated(bytes32,uint256)": EventFragment;
+    "FeeWithdrawal(address,address,uint256)": EventFragment;
+    "MerkleRootUpdated(bytes32,bytes32)": EventFragment;
+    "OwnershipTransferStarted(address,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
-    "PermissionContractChanged(address,address)": EventFragment;
-    "RegisteredSubdomain(address,string)": EventFragment;
+    "RegisteredSubdomain(bytes32,string,address)": EventFragment;
+    "RegistrableUpdated(bool)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "CommissionBipsUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeePayout"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeeUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FeeWithdrawal"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MerkleRootUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferStarted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PermissionContractChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RegisteredSubdomain"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RegistrableUpdated"): EventFragment;
 }
 
 export class SoulRegistrar extends Contract {
@@ -114,15 +226,25 @@ export class SoulRegistrar extends Contract {
   interface: SoulRegistrarInterface;
 
   functions: {
-    changePermissionContract(
-      _newPermissionContract: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    acceptOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
-    "changePermissionContract(address)"(
-      _newPermissionContract: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
+    "acceptOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+    claimed(
+      arg0: BytesLike,
+      arg1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "claimed(bytes32,bytes32)"(
+      arg0: BytesLike,
+      arg1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    commissionBips(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "commissionBips()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     ensRegistry(overrides?: CallOverrides): Promise<[string]>;
 
@@ -132,33 +254,124 @@ export class SoulRegistrar extends Contract {
 
     "ensResolver()"(overrides?: CallOverrides): Promise<[string]>;
 
+    feeConfigs(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+    "feeConfigs(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+    merkleRoots(arg0: BytesLike, overrides?: CallOverrides): Promise<[string]>;
+
+    "merkleRoots(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     "owner()"(overrides?: CallOverrides): Promise<[string]>;
 
-    permissionContract(overrides?: CallOverrides): Promise<[string]>;
+    pendingOwner(overrides?: CallOverrides): Promise<[string]>;
 
-    "permissionContract()"(overrides?: CallOverrides): Promise<[string]>;
+    "pendingOwner()"(overrides?: CallOverrides): Promise<[string]>;
 
-    register(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    registerWithNFTOwnership(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
+
+    registerWithProof(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
+    ): Promise<ContractTransaction>;
+
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
+    ): Promise<ContractTransaction>;
+
+    registrable(overrides?: CallOverrides): Promise<[boolean]>;
+
+    "registrable()"(overrides?: CallOverrides): Promise<[boolean]>;
+
+    relayer(overrides?: CallOverrides): Promise<[string]>;
+
+    "relayer()"(overrides?: CallOverrides): Promise<[string]>;
 
     renounceOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+    setCommissionBips(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setCommissionBips(uint256)"(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setMerkleRoot(
+      rootShard: BytesLike,
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setMerkleRoot(bytes32,bytes32)"(
+      rootShard: BytesLike,
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setRegistrable(
+      newRegistrable: boolean,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setRegistrable(bool)"(
+      newRegistrable: boolean,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setRegistrationFee(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setRegistrationFee(bytes32,(address,uint256))"(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     transferOwnership(
       newOwner: string,
@@ -169,17 +382,39 @@ export class SoulRegistrar extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    withdrawFees(
+      to: string,
+      value: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "withdrawFees(address,uint256)"(
+      to: string,
+      value: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
   };
 
-  changePermissionContract(
-    _newPermissionContract: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  acceptOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
-  "changePermissionContract(address)"(
-    _newPermissionContract: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  "acceptOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+  claimed(
+    arg0: BytesLike,
+    arg1: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  "claimed(bytes32,bytes32)"(
+    arg0: BytesLike,
+    arg1: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  commissionBips(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "commissionBips()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   ensRegistry(overrides?: CallOverrides): Promise<string>;
 
@@ -189,33 +424,124 @@ export class SoulRegistrar extends Contract {
 
   "ensResolver()"(overrides?: CallOverrides): Promise<string>;
 
+  feeConfigs(
+    arg0: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+  "feeConfigs(bytes32)"(
+    arg0: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+  merkleRoots(arg0: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+  "merkleRoots(bytes32)"(
+    arg0: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   "owner()"(overrides?: CallOverrides): Promise<string>;
 
-  permissionContract(overrides?: CallOverrides): Promise<string>;
+  pendingOwner(overrides?: CallOverrides): Promise<string>;
 
-  "permissionContract()"(overrides?: CallOverrides): Promise<string>;
+  "pendingOwner()"(overrides?: CallOverrides): Promise<string>;
 
-  register(
-    rootName_: string,
-    rootNode_: BytesLike,
-    label_: string,
-    owner_: string,
-    overrides?: Overrides
+  registerWithNFTOwnership(
+    nftContract: string,
+    tokenId: BigNumberish,
+    rootNode: BytesLike,
+    label: string,
+    rootShard: BytesLike,
+    merkleProof: BytesLike[],
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  "register(string,bytes32,string,address)"(
-    rootName_: string,
-    rootNode_: BytesLike,
-    label_: string,
-    owner_: string,
-    overrides?: Overrides
+  "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+    nftContract: string,
+    tokenId: BigNumberish,
+    rootNode: BytesLike,
+    label: string,
+    rootShard: BytesLike,
+    merkleProof: BytesLike[],
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
+
+  registerWithProof(
+    rootNode: BytesLike,
+    rootShard: BytesLike,
+    receivers: string[],
+    labels: string[],
+    merkleProofs: BytesLike[][],
+    overrides?: PayableOverrides
+  ): Promise<ContractTransaction>;
+
+  "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+    rootNode: BytesLike,
+    rootShard: BytesLike,
+    receivers: string[],
+    labels: string[],
+    merkleProofs: BytesLike[][],
+    overrides?: PayableOverrides
+  ): Promise<ContractTransaction>;
+
+  registrable(overrides?: CallOverrides): Promise<boolean>;
+
+  "registrable()"(overrides?: CallOverrides): Promise<boolean>;
+
+  relayer(overrides?: CallOverrides): Promise<string>;
+
+  "relayer()"(overrides?: CallOverrides): Promise<string>;
 
   renounceOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
   "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+  setCommissionBips(
+    newBips: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setCommissionBips(uint256)"(
+    newBips: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setMerkleRoot(
+    rootShard: BytesLike,
+    newMerkleRoot: BytesLike,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setMerkleRoot(bytes32,bytes32)"(
+    rootShard: BytesLike,
+    newMerkleRoot: BytesLike,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setRegistrable(
+    newRegistrable: boolean,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setRegistrable(bool)"(
+    newRegistrable: boolean,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setRegistrationFee(
+    rootNode: BytesLike,
+    feeConfig: { recipient: string; fee: BigNumberish },
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setRegistrationFee(bytes32,(address,uint256))"(
+    rootNode: BytesLike,
+    feeConfig: { recipient: string; fee: BigNumberish },
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   transferOwnership(
     newOwner: string,
@@ -227,16 +553,38 @@ export class SoulRegistrar extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  callStatic: {
-    changePermissionContract(
-      _newPermissionContract: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+  withdrawFees(
+    to: string,
+    value: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
-    "changePermissionContract(address)"(
-      _newPermissionContract: string,
+  "withdrawFees(address,uint256)"(
+    to: string,
+    value: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  callStatic: {
+    acceptOwnership(overrides?: CallOverrides): Promise<void>;
+
+    "acceptOwnership()"(overrides?: CallOverrides): Promise<void>;
+
+    claimed(
+      arg0: BytesLike,
+      arg1: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<boolean>;
+
+    "claimed(bytes32,bytes32)"(
+      arg0: BytesLike,
+      arg1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    commissionBips(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "commissionBips()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     ensRegistry(overrides?: CallOverrides): Promise<string>;
 
@@ -246,33 +594,124 @@ export class SoulRegistrar extends Contract {
 
     "ensResolver()"(overrides?: CallOverrides): Promise<string>;
 
+    feeConfigs(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+    "feeConfigs(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
+
+    merkleRoots(arg0: BytesLike, overrides?: CallOverrides): Promise<string>;
+
+    "merkleRoots(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     "owner()"(overrides?: CallOverrides): Promise<string>;
 
-    permissionContract(overrides?: CallOverrides): Promise<string>;
+    pendingOwner(overrides?: CallOverrides): Promise<string>;
 
-    "permissionContract()"(overrides?: CallOverrides): Promise<string>;
+    "pendingOwner()"(overrides?: CallOverrides): Promise<string>;
 
-    register(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
+    registerWithNFTOwnership(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<void>;
+
+    registerWithProof(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    registrable(overrides?: CallOverrides): Promise<boolean>;
+
+    "registrable()"(overrides?: CallOverrides): Promise<boolean>;
+
+    relayer(overrides?: CallOverrides): Promise<string>;
+
+    "relayer()"(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     "renounceOwnership()"(overrides?: CallOverrides): Promise<void>;
+
+    setCommissionBips(
+      newBips: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setCommissionBips(uint256)"(
+      newBips: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setMerkleRoot(
+      rootShard: BytesLike,
+      newMerkleRoot: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setMerkleRoot(bytes32,bytes32)"(
+      rootShard: BytesLike,
+      newMerkleRoot: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setRegistrable(
+      newRegistrable: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setRegistrable(bool)"(
+      newRegistrable: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setRegistrationFee(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setRegistrationFee(bytes32,(address,uint256))"(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     transferOwnership(
       newOwner: string,
@@ -283,32 +722,77 @@ export class SoulRegistrar extends Contract {
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdrawFees(
+      to: string,
+      value: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "withdrawFees(address,uint256)"(
+      to: string,
+      value: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
+    CommissionBipsUpdated(newBips: null): EventFilter;
+
+    FeePayout(from: string | null, to: string | null, value: null): EventFilter;
+
+    FeeUpdated(rootNode: BytesLike | null, newFee: null): EventFilter;
+
+    FeeWithdrawal(
+      from: string | null,
+      to: string | null,
+      value: null
+    ): EventFilter;
+
+    MerkleRootUpdated(
+      rootShard: BytesLike | null,
+      newMerkleRoot: null
+    ): EventFilter;
+
+    OwnershipTransferStarted(
+      previousOwner: string | null,
+      newOwner: string | null
+    ): EventFilter;
+
     OwnershipTransferred(
       previousOwner: string | null,
       newOwner: string | null
     ): EventFilter;
 
-    PermissionContractChanged(
-      permissionContract: null,
-      _newPermissionContract: null
+    RegisteredSubdomain(
+      rootNode: BytesLike | null,
+      label: null,
+      receiver: null
     ): EventFilter;
 
-    RegisteredSubdomain(_owner: string | null, _ens: null): EventFilter;
+    RegistrableUpdated(newRegistrable: null): EventFilter;
   };
 
   estimateGas: {
-    changePermissionContract(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    acceptOwnership(overrides?: Overrides): Promise<BigNumber>;
+
+    "acceptOwnership()"(overrides?: Overrides): Promise<BigNumber>;
+
+    claimed(
+      arg0: BytesLike,
+      arg1: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "changePermissionContract(address)"(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    "claimed(bytes32,bytes32)"(
+      arg0: BytesLike,
+      arg1: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    commissionBips(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "commissionBips()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     ensRegistry(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -318,33 +802,121 @@ export class SoulRegistrar extends Contract {
 
     "ensResolver()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    feeConfigs(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "feeConfigs(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    merkleRoots(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "merkleRoots(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     "owner()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    permissionContract(overrides?: CallOverrides): Promise<BigNumber>;
+    pendingOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "permissionContract()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "pendingOwner()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    register(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    registerWithNFTOwnership(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
+
+    registerWithProof(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
+    ): Promise<BigNumber>;
+
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
+    ): Promise<BigNumber>;
+
+    registrable(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "registrable()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    relayer(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "relayer()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(overrides?: Overrides): Promise<BigNumber>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<BigNumber>;
+
+    setCommissionBips(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setCommissionBips(uint256)"(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setMerkleRoot(
+      rootShard: BytesLike,
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setMerkleRoot(bytes32,bytes32)"(
+      rootShard: BytesLike,
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setRegistrable(
+      newRegistrable: boolean,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setRegistrable(bool)"(
+      newRegistrable: boolean,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setRegistrationFee(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setRegistrationFee(bytes32,(address,uint256))"(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<BigNumber>;
 
     transferOwnership(
       newOwner: string,
@@ -355,17 +927,41 @@ export class SoulRegistrar extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
+
+    withdrawFees(
+      to: string,
+      value: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "withdrawFees(address,uint256)"(
+      to: string,
+      value: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    changePermissionContract(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    acceptOwnership(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    "acceptOwnership()"(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    claimed(
+      arg0: BytesLike,
+      arg1: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "changePermissionContract(address)"(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    "claimed(bytes32,bytes32)"(
+      arg0: BytesLike,
+      arg1: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    commissionBips(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "commissionBips()"(
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     ensRegistry(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -376,37 +972,127 @@ export class SoulRegistrar extends Contract {
 
     "ensResolver()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    feeConfigs(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "feeConfigs(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    merkleRoots(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "merkleRoots(bytes32)"(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "owner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    permissionContract(
-      overrides?: CallOverrides
+    pendingOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "pendingOwner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    registerWithNFTOwnership(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "permissionContract()"(
-      overrides?: CallOverrides
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    register(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    registerWithProof(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
+
+    registrable(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "registrable()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    relayer(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "relayer()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceOwnership(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    setCommissionBips(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setCommissionBips(uint256)"(
+      newBips: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setMerkleRoot(
+      rootShard: BytesLike,
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setMerkleRoot(bytes32,bytes32)"(
+      rootShard: BytesLike,
+      newMerkleRoot: BytesLike,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setRegistrable(
+      newRegistrable: boolean,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setRegistrable(bool)"(
+      newRegistrable: boolean,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setRegistrationFee(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setRegistrationFee(bytes32,(address,uint256))"(
+      rootNode: BytesLike,
+      feeConfig: { recipient: string; fee: BigNumberish },
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     transferOwnership(
       newOwner: string,
@@ -415,6 +1101,18 @@ export class SoulRegistrar extends Contract {
 
     "transferOwnership(address)"(
       newOwner: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    withdrawFees(
+      to: string,
+      value: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "withdrawFees(address,uint256)"(
+      to: string,
+      value: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
   };

@@ -13,7 +13,7 @@ import {
 import {
   Contract,
   ContractTransaction,
-  Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
@@ -22,24 +22,27 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface ISoulRegistrarInterface extends ethers.utils.Interface {
   functions: {
-    "changePermissionContract(address)": FunctionFragment;
-    "register(string,bytes32,string,address)": FunctionFragment;
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])": FunctionFragment;
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "changePermissionContract",
-    values: [string]
+    functionFragment: "registerWithNFTOwnership",
+    values: [string, BigNumberish, BytesLike, string, BytesLike, BytesLike[]]
   ): string;
   encodeFunctionData(
-    functionFragment: "register",
-    values: [string, BytesLike, string, string]
+    functionFragment: "registerWithProof",
+    values: [BytesLike, BytesLike, string[], string[], BytesLike[][]]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "changePermissionContract",
+    functionFragment: "registerWithNFTOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "register", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "registerWithProof",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
@@ -58,83 +61,119 @@ export class ISoulRegistrar extends Contract {
   interface: ISoulRegistrarInterface;
 
   functions: {
-    changePermissionContract(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    registerWithNFTOwnership(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    "changePermissionContract(address)"(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    register(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    registerWithProof(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
     ): Promise<ContractTransaction>;
   };
 
-  changePermissionContract(
-    _newPermissionContract: string,
-    overrides?: Overrides
+  registerWithNFTOwnership(
+    nftContract: string,
+    tokenId: BigNumberish,
+    rootNode: BytesLike,
+    label: string,
+    rootShard: BytesLike,
+    merkleProof: BytesLike[],
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  "changePermissionContract(address)"(
-    _newPermissionContract: string,
-    overrides?: Overrides
+  "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+    nftContract: string,
+    tokenId: BigNumberish,
+    rootNode: BytesLike,
+    label: string,
+    rootShard: BytesLike,
+    merkleProof: BytesLike[],
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  register(
-    rootName_: string,
-    rootNode_: BytesLike,
-    label_: string,
-    owner_: string,
-    overrides?: Overrides
+  registerWithProof(
+    rootNode: BytesLike,
+    rootShard: BytesLike,
+    receivers: string[],
+    labels: string[],
+    merkleProofs: BytesLike[][],
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
-  "register(string,bytes32,string,address)"(
-    rootName_: string,
-    rootNode_: BytesLike,
-    label_: string,
-    owner_: string,
-    overrides?: Overrides
+  "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+    rootNode: BytesLike,
+    rootShard: BytesLike,
+    receivers: string[],
+    labels: string[],
+    merkleProofs: BytesLike[][],
+    overrides?: PayableOverrides
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    changePermissionContract(
-      _newPermissionContract: string,
+    registerWithNFTOwnership(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "changePermissionContract(address)"(
-      _newPermissionContract: string,
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    register(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
+    registerWithProof(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -142,58 +181,82 @@ export class ISoulRegistrar extends Contract {
   filters: {};
 
   estimateGas: {
-    changePermissionContract(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    registerWithNFTOwnership(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    "changePermissionContract(address)"(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    register(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    registerWithProof(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    changePermissionContract(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    registerWithNFTOwnership(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "changePermissionContract(address)"(
-      _newPermissionContract: string,
-      overrides?: Overrides
+    "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
+      nftContract: string,
+      tokenId: BigNumberish,
+      rootNode: BytesLike,
+      label: string,
+      rootShard: BytesLike,
+      merkleProof: BytesLike[],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    register(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    registerWithProof(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
 
-    "register(string,bytes32,string,address)"(
-      rootName_: string,
-      rootNode_: BytesLike,
-      label_: string,
-      owner_: string,
-      overrides?: Overrides
+    "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
+      rootNode: BytesLike,
+      rootShard: BytesLike,
+      receivers: string[],
+      labels: string[],
+      merkleProofs: BytesLike[][],
+      overrides?: PayableOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

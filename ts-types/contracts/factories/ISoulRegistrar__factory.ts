@@ -21,41 +21,71 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_newPermissionContract",
+        name: "nftContract",
         type: "address",
       },
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+      {
+        internalType: "bytes32",
+        name: "rootNode",
+        type: "bytes32",
+      },
+      {
+        internalType: "string",
+        name: "label",
+        type: "string",
+      },
+      {
+        internalType: "bytes32",
+        name: "rootShard",
+        type: "bytes32",
+      },
+      {
+        internalType: "bytes32[]",
+        name: "merkleProof",
+        type: "bytes32[]",
+      },
     ],
-    name: "changePermissionContract",
+    name: "registerWithNFTOwnership",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
     inputs: [
       {
-        internalType: "string",
-        name: "rootName_",
-        type: "string",
-      },
-      {
         internalType: "bytes32",
-        name: "rootNode_",
+        name: "rootNode",
         type: "bytes32",
       },
       {
-        internalType: "string",
-        name: "label_",
-        type: "string",
+        internalType: "bytes32",
+        name: "rootShard",
+        type: "bytes32",
       },
       {
-        internalType: "address",
-        name: "owner_",
-        type: "address",
+        internalType: "address[]",
+        name: "receivers",
+        type: "address[]",
+      },
+      {
+        internalType: "string[]",
+        name: "labels",
+        type: "string[]",
+      },
+      {
+        internalType: "bytes32[][]",
+        name: "merkleProofs",
+        type: "bytes32[][]",
       },
     ],
-    name: "register",
+    name: "registerWithProof",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
 ];

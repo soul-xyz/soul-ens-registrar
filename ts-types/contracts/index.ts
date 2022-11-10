@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { Ownable } from "./Ownable";
+export type { Ownable2Step } from "./Ownable2Step";
 export type { ENSRegistrar } from "./ENSRegistrar";
 export type { ENSResolver } from "./ENSResolver";
 export type { IENS } from "./IENS";
@@ -26,6 +27,7 @@ export type { PermissionContract } from "./PermissionContract";
 export type { SoulRegistrar } from "./SoulRegistrar";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
+export { Ownable2Step__factory } from "./factories/Ownable2Step__factory";
 export { ENSRegistrar__factory } from "./factories/ENSRegistrar__factory";
 export { ENSResolver__factory } from "./factories/ENSResolver__factory";
 export { IENS__factory } from "./factories/IENS__factory";

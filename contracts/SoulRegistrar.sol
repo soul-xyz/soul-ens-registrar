@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IENS} from "./ens/interfaces/IENS.sol";
 import {IENSResolver} from "./ens/interfaces/IENSResolver.sol";
 import {IENSRegistrar} from "./ens/interfaces/IENSRegistrar.sol";
 import "./ens/interfaces/ISoulRegistrar.sol";
+import {IERC721} from "./lib/ERC721/interface/IERC721.sol";
 
-contract SoulRegistrar is ISoulRegistrar, Ownable {
-    // ============ Immutable Storage ============
+contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
 
+    // ======================== Immutable Storage ========================
     /**
      * The address of the public ENS registry.
      * @dev Dependency-injectable for testing purposes, but otherwise this is the
@@ -19,102 +22,291 @@ contract SoulRegistrar is ISoulRegistrar, Ownable {
 
     /**
      * The address of the ENSResolver.
+     * The ENS public resolver at 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41
      */
     IENSResolver public immutable ensResolver;
 
-    // ============ Mutable Storage ============
+    // ================ Mutable Ownership Configuration ==================
 
     /**
-     * The address of the Permission Contract that gates access to this namespace.
+     * The address of the contract's relayer.
+     * Relayer has the permission to relay certain actions to this contract (i.e., set MerkleRoot)
      */
-    address public permissionContract;
+    address private _relayer;
 
-    // ============ Events ============
+    // ====================== Merkle Root Configuration ====================
 
-    event PermissionContractChanged(address permissionContract, address _newPermissionContract);
-    event RegisteredSubdomain(address indexed _owner, string _ens);
+    mapping(bytes32 => bytes32) public merkleRoots;
 
-    // ============ Modifiers ============
+    // Root shard => id => True/False
+    mapping(bytes32 => mapping(bytes32 => bool)) public claimed;
+
+    // ================ Mutable Registration Configuration ==================
+
+    bool public registrable;
+
+    // Root node => funding recipient => fee amount
+    mapping(bytes32 => NodeFeeConfig) public feeConfigs;
+    struct NodeFeeConfig {
+        address payable recipient;
+        uint256 fee;
+    }
+
+    // Soul commission charge bips
+    uint256 public commissionBips;
+
+    // ================================ Events ==============================
+
+    event RegistrableUpdated(bool newRegistrable);
+    event RegisteredSubdomain(bytes32 indexed rootNode, string label, address receiver);
+    event MerkleRootUpdated(bytes32 indexed rootShard, bytes32 newMerkleRoot);
+    event FeeUpdated(bytes32 indexed rootNode, uint256 newFee);
+    event CommissionBipsUpdated(uint256 newBips);
+    event FeePayout(address indexed from, address indexed to, uint256 value);
+    event FeeWithdrawal(address indexed from, address indexed to, uint256 value);
+
+    // ================================ Errors ==============================
+    error Unauthorized(string requireRole);
+    error RegistrationHasNotStarted();
+    error InvalidParams(string reason);
+    error InsufficientBalance();
+    error AlreadyClaimed();
+    error InvalidProof();
+    error SubdomainAlreadyOwned();
+
+
+    // ============================== Modifiers ==============================
 
     /**
-     * @dev Modifier to check whether the `msg.sender` is the Permission Contract.
-     * If it is, it will run the function. Otherwise, it will revert.
+     * @dev Modifier to check whether the `msg.sender` is the relayer.
      */
-    modifier onlyPermissionContract() {
-        require(
-            msg.sender == permissionContract,
-            "ENSRegistrar: caller is not the Permission Contract"
-        );
+    modifier onlyRelayer() {
+        if(msg.sender != relayer()) {
+            revert Unauthorized({ requireRole: "relayer or owner" });
+        }
         _;
     }
 
-    // ============ Constructor ============
+    modifier canRegister() {
+        if(!registrable) {
+            revert RegistrationHasNotStarted();
+        }
+        _;
+    }
+
+    // ============================ Constructor ==============================
 
     /**
      * @notice Constructor that sets the ENS root name and root node to manage.
      * @param ensRegistry_ The address of the ENS registry
      * @param ensResolver_ The address of the ENS resolver
-     * @param permissionContract_ The address of the Permission Contract
      */
     constructor(
-        address ensRegistry_,
-        address ensResolver_,
-        address permissionContract_
-    ) public {
-        permissionContract = permissionContract_;
-        ensRegistry = IENS(ensRegistry_);
-        ensResolver = IENSResolver(ensResolver_);
+        IENS ensRegistry_,
+        IENSResolver ensResolver_
+    ) {
+        ensRegistry = ensRegistry_;
+        ensResolver = ensResolver_;
+        setRegistrable(true);
     }
 
-    // ============ Subdomain Management ============
+    // ====================== Configuration Management =========================
+
+    /**
+     * Allows the owner to pause registration.
+     */
+    function setRegistrable(bool newRegistrable) public onlyOwner {
+        registrable = newRegistrable;
+        emit RegistrableUpdated(newRegistrable);
+    }
+
+    /**
+     * Allows relayer to set/update registration fee recipient and amount
+     */
+    function setRegistrationFee(bytes32 rootNode, NodeFeeConfig memory feeConfig) external onlyRelayer {
+        feeConfigs[rootNode] = feeConfig;
+        emit FeeUpdated(rootNode, feeConfig.fee);
+    }
+
+    /**
+     * Allows the owner to set the commission bips
+     */
+    function setCommissionBips(uint256 newBips) external onlyOwner {
+        if(newBips > 10000) {
+            revert InvalidParams({ reason: "Invalid commission bips" });
+        }
+
+        commissionBips = newBips;
+        emit CommissionBipsUpdated(newBips);
+    }
+
+    /**
+     * Allows the Relayer to set the MerkleRoot
+     */
+    function setMerkleRoot(bytes32 rootShard, bytes32 newMerkleRoot) external onlyRelayer {
+        merkleRoots[rootShard] = newMerkleRoot;
+        emit MerkleRootUpdated(rootShard, newMerkleRoot);
+    }
+
+    // ================================ Getters ===============================
+
+    function relayer() public view returns (address) {
+        return _relayer == address(0) ? owner() : _relayer;
+    }
+
+    // ========================= Subdomain Registration ========================
+
+    /**
+     * Burns the sender's invite tokens and registers an ENS given label to a given address.
+     * Before calling this function, the root node owner should already called setApprovalForAll
+     * on ENSRegistry to add this contract as the root node's authorised operator.
+     * @param rootNode The hashed node for the ens root
+     * @param rootShard The merkle proof shard
+     * @param receivers The list of addresses that should own the labels.
+     * @param labels The list of ENS labels
+     * @param merkleProofs The list of merkle proof
+     */
+    function registerWithProof(
+        bytes32 rootNode,
+        bytes32 rootShard,
+        address[] calldata receivers,
+        string[] calldata labels,
+        bytes32[][] calldata merkleProofs
+    )
+        external
+        payable
+        canRegister
+    {
+        if(receivers.length != labels.length || receivers.length != merkleProofs.length) {
+            revert InvalidParams({ reason: "input array length not identical" });
+        }
+
+        // registration fee
+        NodeFeeConfig memory feeConfig = feeConfigs[rootNode];
+        if(msg.value < feeConfig.fee) {
+            revert InsufficientBalance();
+        }
+
+        uint256 payout = feeConfig.fee * (10000 - commissionBips) / 10000 * receivers.length;
+        if (payout > 0) {
+            Address.sendValue(feeConfig.recipient, payout);
+            emit FeePayout(address(this), feeConfig.recipient, payout);
+        }
+
+        for (uint i = 0; i < receivers.length; i++) {
+            bytes32 merkleLeaf = keccak256(abi.encodePacked(receivers[i], rootNode, labels[i]));
+
+            _register(
+                rootNode,
+                rootShard,
+                receivers[i],
+                labels[i],
+                merkleProofs[i],
+                merkleLeaf
+            );
+        }
+    }
+
+    /**
+     * @notice Allow membership NFT owner to claim ENS subdomain of the root node.
+     * Before calling this function, the root node owner should already called setApprovalForAll
+     * on ENSRegistry to add this contract as the root node's authorised operator.
+     * @param nftContract The contract address of the membership NFT
+     * @param tokenId The token id of the membership NFT
+     * @param rootNode The node of the root name
+     * @param label The subdomain label
+     * @param rootShard The merkle proof shard
+     * @param merkleProof The list of merkle proof
+     */
+    function registerWithNFTOwnership(
+        address nftContract,
+        uint256 tokenId,
+        bytes32 rootNode,
+        string calldata label,
+        bytes32 rootShard,
+        bytes32[] calldata merkleProof
+    )
+        external
+        payable
+        canRegister
+    {
+        bytes32 claimId = keccak256(abi.encodePacked(tokenId, nftContract));
+        //  Make sure it's not already claimed.
+        if(claimed[rootShard][claimId]) {
+            revert AlreadyClaimed();
+        }
+        // Mark it as claimed.
+        claimed[rootShard][claimId] = true;
+
+        // NOTE: No registration fee for existing NFT holders.
+        if(msg.sender != IERC721(nftContract).ownerOf(tokenId)) {
+            revert Unauthorized({ requireRole: "NFT owner" });
+        }
+
+        bytes32 merkleLeaf = keccak256(abi.encodePacked(nftContract, rootNode, "*"));
+        _register(
+            rootNode,
+            rootShard,
+            msg.sender,
+            label,
+            merkleProof,
+            merkleLeaf
+        );
+    }
 
     /**
      * @notice Assigns an ENS subdomain of the root node to a target address.
-     * Can only be called by Permission Contract. Before calling this function,
+     * Private function. Before calling this function,
      * the root node owner should already called setApprovalForAll on ENSRegistry,
-     * to add this caller contract as the root node's authorised operator.
-     * @param rootName_ The root name (e.g. 9dcc.eth).
-     * @param rootNode_ The node of the root name (e.g. namehash(9dcc.eth)).
-     * @param label_ The subdomain label.
-     * @param owner_ The owner of the subdomain.
+     * to add this contract as the root node's authorised operator.
+     * @param rootNode The node of the root name
+     * @param rootShard The merkle proof shard
+     * @param receiver The owner of the subdomain
+     * @param label The subdomain label
+     * @param merkleProof The list of merkle proof
+     * @param merkleLeaf The leaf of merkle proof
      */
-
-    function register(
-        string memory rootName_,
-        bytes32 rootNode_,
-        string calldata label_,
-        address owner_
+    function _register(
+        bytes32 rootNode,
+        bytes32 rootShard,
+        address receiver,
+        string memory label,
+        bytes32[] memory merkleProof,
+        bytes32 merkleLeaf
     )
-        external
-        onlyPermissionContract
+        private
     {
-        bytes32 labelNode = keccak256(abi.encodePacked(label_));
-        bytes32 node = keccak256(abi.encodePacked(rootNode_, labelNode));
+        // Verify the merkle proof.
+        if(!MerkleProof.verify(merkleProof, merkleRoots[rootShard], merkleLeaf)) {
+            revert InvalidProof();
+        }
+        // We don't need to mark it as claimed, because the label is already scarce.
 
-        require(
-            ensRegistry.owner(node) == address(0),
-            "SoulRegistrar: label is already owned"
-        );
+        // Register the node with ens
+        bytes32 labelNode = keccak256(abi.encodePacked(label));
+        bytes32 node = keccak256(abi.encodePacked(rootNode, labelNode));
 
-        // Forward ENS
+        if(ensRegistry.owner(node) != address(0)) {
+            revert SubdomainAlreadyOwned();
+        }
+
         ensRegistry.setSubnodeRecord(
-            rootNode_,
+            rootNode,
             labelNode,
-            owner_,
+            receiver,
             address(ensResolver),
-            0
+            0 // ttl
         );
-        ensResolver.setAddr(node, owner_);
+        ensResolver.setAddr(node, receiver);
 
-        emit RegisteredSubdomain(owner_, label_);
+        emit RegisteredSubdomain(rootNode, label, receiver);
     }
 
+    // ========================== Admin Functions ==========================
 
-    // ============ Admin Functions ============
-
-    function changePermissionContract(address _newPermissionContract) external onlyOwner
+    function withdrawFees(address payable to, uint256 value) external onlyOwner
     {
-        permissionContract = _newPermissionContract;
-        emit PermissionContractChanged(permissionContract, _newPermissionContract);
+        Address.sendValue(to, value);
+        emit FeeWithdrawal(address(this), to, value);
     }
 }
