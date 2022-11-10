@@ -1,6 +1,6 @@
 # Soul ENS Registrar
 
-This registrar allows a relayer address to update a merkle-root that gates subdomain minting for some address.
+This registrar allows a relayer address to update a merkle-root that gates subdomain minting for community membership addresses.
 
 The owner of the ENS must called _setApprovalForAll_ on the official ENS registry, and pass in the SoulRegistrar address. An example is provided below, and the soul.xyz website will have an interface to make this easier.
 
