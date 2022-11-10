@@ -14,14 +14,14 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
 
     // ======================== Immutable Storage ========================
     /**
-     * The address of the public ENS registry.
+     * The interface of the public ENS registry.
      * @dev Dependency-injectable for testing purposes, but otherwise this is the
      * canonical ENS registry at 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e.
      */
     IENS public immutable ensRegistry;
 
     /**
-     * The address of the ENSResolver.
+     * The interface of the ENSResolver.
      * The ENS public resolver at 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41
      */
     IENSResolver public immutable ensResolver;
@@ -66,14 +66,14 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
     event FeeWithdrawal(address indexed from, address indexed to, uint256 value);
 
     // ================================ Errors ==============================
-    error Unauthorized(string requireRole);
+
+    error Unauthorized();
     error RegistrationHasNotStarted();
-    error InvalidParams(string reason);
+    error InvalidParams();
     error InsufficientBalance();
     error AlreadyClaimed();
     error InvalidProof();
     error SubdomainAlreadyOwned();
-
 
     // ============================== Modifiers ==============================
 
@@ -81,16 +81,12 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
      * @dev Modifier to check whether the `msg.sender` is the relayer.
      */
     modifier onlyRelayer() {
-        if(msg.sender != relayer()) {
-            revert Unauthorized({ requireRole: "relayer or owner" });
-        }
+        if(msg.sender != relayer()) revert Unauthorized();
         _;
     }
 
     modifier canRegister() {
-        if(!registrable) {
-            revert RegistrationHasNotStarted();
-        }
+        if(!registrable) revert RegistrationHasNotStarted();
         _;
     }
 
@@ -132,9 +128,7 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
      * Allows the owner to set the commission bips
      */
     function setCommissionBips(uint256 newBips) external onlyOwner {
-        if(newBips > 10000) {
-            revert InvalidParams({ reason: "Invalid commission bips" });
-        }
+        if(newBips > 10000) revert InvalidParams();
 
         commissionBips = newBips;
         emit CommissionBipsUpdated(newBips);
@@ -177,15 +171,11 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
         payable
         canRegister
     {
-        if(receivers.length != labels.length || receivers.length != merkleProofs.length) {
-            revert InvalidParams({ reason: "input array length not identical" });
-        }
+        if(receivers.length != labels.length || receivers.length != merkleProofs.length) revert InvalidParams();
 
         // registration fee
         NodeFeeConfig memory feeConfig = feeConfigs[rootNode];
-        if(msg.value < feeConfig.fee) {
-            revert InsufficientBalance();
-        }
+        if(msg.value < feeConfig.fee) revert InsufficientBalance();
 
         uint256 payout = feeConfig.fee * (10000 - commissionBips) / 10000 * receivers.length;
         if (payout > 0) {
@@ -232,26 +222,15 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
     {
         bytes32 claimId = keccak256(abi.encodePacked(tokenId, nftContract));
         //  Make sure it's not already claimed.
-        if(claimed[rootShard][claimId]) {
-            revert AlreadyClaimed();
-        }
+        if(claimed[rootShard][claimId]) revert AlreadyClaimed();
         // Mark it as claimed.
         claimed[rootShard][claimId] = true;
 
         // NOTE: No registration fee for existing NFT holders.
-        if(msg.sender != IERC721(nftContract).ownerOf(tokenId)) {
-            revert Unauthorized({ requireRole: "NFT owner" });
-        }
+        if(msg.sender != IERC721(nftContract).ownerOf(tokenId)) revert Unauthorized();
 
         bytes32 merkleLeaf = keccak256(abi.encodePacked(nftContract, rootNode, "*"));
-        _register(
-            rootNode,
-            rootShard,
-            msg.sender,
-            label,
-            merkleProof,
-            merkleLeaf
-        );
+        _register(rootNode, rootShard, msg.sender, label, merkleProof, merkleLeaf);
     }
 
     /**
@@ -277,26 +256,16 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
         private
     {
         // Verify the merkle proof.
-        if(!MerkleProof.verify(merkleProof, merkleRoots[rootShard], merkleLeaf)) {
-            revert InvalidProof();
-        }
+        if(!MerkleProof.verify(merkleProof, merkleRoots[rootShard], merkleLeaf)) revert InvalidProof();
         // We don't need to mark it as claimed, because the label is already scarce.
 
         // Register the node with ens
         bytes32 labelNode = keccak256(abi.encodePacked(label));
         bytes32 node = keccak256(abi.encodePacked(rootNode, labelNode));
 
-        if(ensRegistry.owner(node) != address(0)) {
-            revert SubdomainAlreadyOwned();
-        }
+        if(ensRegistry.owner(node) != address(0)) revert SubdomainAlreadyOwned();
 
-        ensRegistry.setSubnodeRecord(
-            rootNode,
-            labelNode,
-            receiver,
-            address(ensResolver),
-            0 // ttl
-        );
+        ensRegistry.setSubnodeRecord(rootNode, labelNode, receiver, address(ensResolver), 0);
         ensResolver.setAddr(node, receiver);
 
         emit RegisteredSubdomain(rootNode, label, receiver);
