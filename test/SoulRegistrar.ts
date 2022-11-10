@@ -1,15 +1,13 @@
 import {expect} from "chai";
-import {BigNumber} from "ethers";
 import {ethers, waffle} from "hardhat";
 
 import setup from "./setup";
 import {parseBalanceMap} from "../merkle-distribution/parse-balance-map";
-import {getAddress} from "ethers/lib/utils";
 
-describe("PermissionContract", () => {
+describe("SoulRegistrar", () => {
     // Contracts
-    let permissionContract;
-    let ensRegistrar;
+    let soulRegistrar;
+    // let ensRegistrar;
     let ensRegistry;
     let ensResolver;
     let admitOne;
@@ -27,8 +25,8 @@ describe("PermissionContract", () => {
 
     beforeEach(async () => {
         ({
-            permissionContract,
-            ensRegistrar,
+            soulRegistrar,
+            // ensRegistrar,
             ensRegistry,
             ensResolver,
             originalOwner,
@@ -45,66 +43,66 @@ describe("PermissionContract", () => {
     });
 
     describe("deployed", () => {
-        it("the permissionContract has the correct registrar", async () => {
-            const receivedENSRegistrar = await permissionContract.ensRegistrar();
-            expect(receivedENSRegistrar).to.eq(
-                ensRegistrar.address
-            );
-        });
+        // it("the soulRegistrar has the correct registrar", async () => {
+        //     const receivedENSRegistrar = await soulRegistrar.ensRegistrar();
+        //     expect(receivedENSRegistrar).to.eq(
+        //         ensRegistrar.address
+        //     );
+        // });
 
         it("has registrable set to true", async () => {
-            const isRegistrable = await permissionContract.registrable();
+            const isRegistrable = await soulRegistrar.registrable();
             expect(isRegistrable).to.eq(true);
         });
     });
 
     describe("#setENSRegistrar", () => {
         describe("when called by the owner", () => {
-            it("updates the registrar appropriately", async () => {
-                // Set it to a new address, and check that it updated correctly.
-                const newAddress = "0xC85Ef1106632B9e7F8DE9cE0c0f1de1F70E67694";
-                await permissionContract.connect(owner).setENSRegistrar(newAddress);
-
-                expect(await permissionContract.ensRegistrar()).to.eq(newAddress);
-
-                // Set it back to the actual registrar, and check that it updated correctly again.
-                await permissionContract.connect(owner).setENSRegistrar(ensRegistrar.address);
-                expect(await permissionContract.ensRegistrar()).to.eq(ensRegistrar.address);
-            });
+            // it("updates the registrar appropriately", async () => {
+            //     // Set it to a new address, and check that it updated correctly.
+            //     const newAddress = "0xC85Ef1106632B9e7F8DE9cE0c0f1de1F70E67694";
+            //     await soulRegistrar.connect(owner).setENSRegistrar(newAddress);
+            //
+            //     expect(await soulRegistrar.ensRegistrar()).to.eq(newAddress);
+            //
+            //     // Set it back to the actual registrar, and check that it updated correctly again.
+            //     await soulRegistrar.connect(owner).setENSRegistrar(ensRegistrar.address);
+            //     expect(await soulRegistrar.ensRegistrar()).to.eq(ensRegistrar.address);
+            // });
         });
 
         describe("when called by a non-owner account", () => {
-            it("it reverts the transaction", async () => {
-                // Set it to a new address, and check that it updated correctly.
-                const newAddress = "0xC85Ef1106632B9e7F8DE9cE0c0f1de1F70E67694";
-                const transaction = permissionContract.connect(account1).setENSRegistrar(newAddress);
-                await expect(transaction).to.be.revertedWith(
-                    "PermissionContract: caller is not the owner"
-                );
-
-                // Original registrar still set.
-                expect(await permissionContract.ensRegistrar()).to.eq(ensRegistrar.address);
-            });
+            // it("it reverts the transaction", async () => {
+            //     // Set it to a new address, and check that it updated correctly.
+            //     const newAddress = "0xC85Ef1106632B9e7F8DE9cE0c0f1de1F70E67694";
+            //     const transaction = soulRegistrar.connect(account1).setENSRegistrar(newAddress);
+            //     await expect(transaction).to.be.revertedWith(
+            //         "Ownable: caller is not the owner"
+            //     );
+            //
+            //     // Original registrar still set.
+            //     expect(await soulRegistrar.ensRegistrar()).to.eq(ensRegistrar.address);
+            // });
         });
     });
 
     describe("#setRegistrable", () => {
         describe("when called by an address that is not the owner", () => {
             it("reverts the transaction", async () => {
-                const transaction = permissionContract.connect(account1).setRegistrable(false);
+                const transaction = soulRegistrar.connect(account1).setRegistrable(false);
                 await expect(transaction).to.be.revertedWith(
-                    "PermissionContract: caller is not the owner"
+                    "Ownable: caller is not the owner"
                 );
             });
         });
 
         describe("when called by the owner", () => {
             it("updates the registrable variable appropriately", async () => {
-                await permissionContract.connect(owner).setRegistrable(false);
-                expect(await permissionContract.registrable()).to.eq(false);
+                await soulRegistrar.connect(owner).setRegistrable(false);
+                expect(await soulRegistrar.registrable()).to.eq(false);
 
-                await permissionContract.connect(owner).setRegistrable(true);
-                expect(await permissionContract.registrable()).to.eq(true);
+                await soulRegistrar.connect(owner).setRegistrable(true);
+                expect(await soulRegistrar.registrable()).to.eq(true);
             });
         });
     });
@@ -112,24 +110,24 @@ describe("PermissionContract", () => {
     describe("#setRegistrationFee", () => {
         describe("when called by an address that is not the root provider", () => {
             it("reverts the transaction", async () => {
-                const transaction = permissionContract.connect(account1).setRegistrationFee(
+                const transaction = soulRegistrar.connect(account1).setRegistrationFee(
                     "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
                     feeConfig
                 );
                 await expect(transaction).to.be.revertedWith(
-                    "PermissionContract: caller is not the root provider or owner."
+                    "Unauthorized()"
                 );
             });
         });
 
         describe("when called by the root provider", () => {
             it("updates the feeConfigs variable appropriately", async () => {
-                const transaction = permissionContract.connect(owner).setRegistrationFee(
+                const transaction = soulRegistrar.connect(owner).setRegistrationFee(
                     "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
                     feeConfig
                 );
-                await expect(transaction).to.emit(permissionContract, "FeeUpdated");
-                const storedFeeConfig = await permissionContract
+                await expect(transaction).to.emit(soulRegistrar, "FeeUpdated");
+                const storedFeeConfig = await soulRegistrar
                     .feeConfigs("0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e");
                 expect(storedFeeConfig.recipient).to.eq(account1.address);
             });
@@ -139,23 +137,23 @@ describe("PermissionContract", () => {
     describe("#setCommissionBips", () => {
         describe("when called by an address that is not the owner", () => {
             it("reverts the transaction", async () => {
-                const transaction = permissionContract.connect(account1).setCommissionBips(10);
-                await expect(transaction).to.be.revertedWith("PermissionContract: caller is not the owner");
+                const transaction = soulRegistrar.connect(account1).setCommissionBips(10);
+                await expect(transaction).to.be.revertedWith("Ownable: caller is not the owner");
             });
         });
 
         describe("when called by the owner", () => {
             describe("with invalid bips number", () => {
                 it("reverts the transaction", async () => {
-                    const transaction = permissionContract.connect(owner).setCommissionBips(1000000);
-                    await expect(transaction).to.be.revertedWith("PermissionContract: Invalid commission bips");
+                    const transaction = soulRegistrar.connect(owner).setCommissionBips(1000000);
+                    await expect(transaction).to.be.revertedWith("InvalidParams()");
                 });
             })
 
             it("updates the commissionBips variable appropriately with all valid condition", async () => {
-                const transaction = permissionContract.connect(owner).setCommissionBips(10);
-                await expect(transaction).to.emit(permissionContract, "CommissionBipsUpdated");
-                expect(await permissionContract.commissionBips()).to.eq(10);
+                const transaction = soulRegistrar.connect(owner).setCommissionBips(10);
+                await expect(transaction).to.emit(soulRegistrar, "CommissionBipsUpdated");
+                expect(await soulRegistrar.commissionBips()).to.eq(10);
             });
         });
     });
@@ -181,37 +179,37 @@ describe("PermissionContract", () => {
         let rootName = "soul.xyz";
 
         // Quick detour here...
-        describe("ENSRegistry", () => {
-            describe("#storeCurrentOwner", () => {
-                it("it stores the current ENS owner", async () => {
-                    const node = ethers.utils.namehash("soul.xyz");
-
-                    const ensOwner = await ensRegistry.owner(node);
-                    expect(ensOwner).to.eq(ensRegistrar.address);
-
-                    const originalENSOwner = await ensRegistrar.connect(owner).originalOwner(node);
-                    expect(originalENSOwner).to.eq(originalOwner.address);
-
-                    // These should not be the same.
-                    expect(originalENSOwner).not.to.eq(ensOwner);
-
-                    // Now we're going to restore the owner.
-                    await ensRegistrar.connect(originalOwner).restoreOwner(node);
-                    const restoredOwner = await ensRegistry.owner(node);
-                    expect(restoredOwner).to.eq(originalENSOwner);
-                });
-            });
-        });
+        // describe("ENSRegistry", () => {
+        //     describe("#storeCurrentOwner", () => {
+        //         it("it stores the current ENS owner", async () => {
+        //             const node = ethers.utils.namehash("soul.xyz");
+        //
+        //             const ensOwner = await ensRegistry.owner(node);
+        //             expect(ensOwner).to.eq(ensRegistrar.address);
+        //
+        //             const originalENSOwner = await ensRegistrar.connect(owner).originalOwner(node);
+        //             expect(originalENSOwner).to.eq(originalOwner.address);
+        //
+        //             // These should not be the same.
+        //             expect(originalENSOwner).not.to.eq(ensOwner);
+        //
+        //             // Now we're going to restore the owner.
+        //             await ensRegistrar.connect(originalOwner).restoreOwner(node);
+        //             const restoredOwner = await ensRegistry.owner(node);
+        //             expect(restoredOwner).to.eq(originalENSOwner);
+        //         });
+        //     });
+        // });
 
         beforeEach(async () => {
-            const transaction = await permissionContract.connect(owner).setMerkleRoot(shard, claimData.merkleRoot);
+            const transaction = await soulRegistrar.connect(owner).setMerkleRoot(shard, claimData.merkleRoot);
             const receipt = await (await transaction).wait();
             // console.log(receipt);
         })
 
         it("has the correct merkle root", async () => {
             expect(
-                await permissionContract.getMerkleRoot(shard)
+                await soulRegistrar.merkleRoots(shard)
             ).to.eq(claimData.merkleRoot);
         });
 
@@ -222,17 +220,16 @@ describe("PermissionContract", () => {
                 const claimer = claimers[0];
                 const firstClaim = claimData.claims[claimer];
 
-                const transaction = permissionContract
+                const transaction = soulRegistrar
                     .connect(account1)
                     .registerWithProof(
-                        rootName,
                         firstClaim.rootNode,
                         incorrectShard,
                         [claimer],
                         [firstClaim.label],
                         [firstClaim.proof]
                     );
-                await expect(transaction).to.be.revertedWith("PermissionContract: Invalid proof.");
+                await expect(transaction).to.be.revertedWith("InvalidProof()");
             });
         });
 
@@ -260,15 +257,14 @@ describe("PermissionContract", () => {
 
             describe(" but with insufficient fund for registration fee", () => {
                 it("reverts the transaction", async () => {
-                    permissionContract.connect(owner).setRegistrationFee(
+                    soulRegistrar.connect(owner).setRegistrationFee(
                         firstClaim.rootNode,
                         feeConfig
                     );
 
-                    const transaction = permissionContract
+                    const transaction = soulRegistrar
                         .connect(account1)
                         .registerWithProof(
-                            rootName,
                             firstClaim.rootNode,
                             shard,
                             [claimer],
@@ -277,7 +273,7 @@ describe("PermissionContract", () => {
                         );
 
                     await expect(transaction).to.be.revertedWith(
-                        "PermissionContract: registration fee required"
+                        "InsufficientBalance()"
                     );
                 });
             });
@@ -285,35 +281,33 @@ describe("PermissionContract", () => {
             describe("and all other conditions are correct", () => {
                 it("takes fees and commissions correctly", async () => {
                     const provider = waffle.provider;
-                    const originalBalance = await provider.getBalance(permissionContract.address);
+                    const originalBalance = await provider.getBalance(soulRegistrar.address);
 
-                    permissionContract.connect(owner).setRegistrationFee(
+                    soulRegistrar.connect(owner).setRegistrationFee(
                         firstClaim.rootNode,
                         feeConfig
                     );
-                    permissionContract.connect(owner).setCommissionBips(9000);
-
-                    const transaction = permissionContract
-                        .connect(account1)
-                        .registerWithProof(
-                            rootName,
-                            firstClaim.rootNode,
-                            shard,
-                            [claimer],
-                            [firstClaim.label],
-                            [firstClaim.proof],
-                            {value: ethers.utils.parseEther('0.001')}
-                        );
-                    await expect(transaction).to.emit(permissionContract, "Transfer");
-                    const newBalance = await provider.getBalance(permissionContract.address);
-                    expect(newBalance).to.be.gt(originalBalance);
+                    // soulRegistrar.connect(owner).setCommissionBips(9000);
+                    //
+                    // const transaction = soulRegistrar
+                    //     .connect(account1)
+                    //     .registerWithProof(
+                    //         firstClaim.rootNode,
+                    //         shard,
+                    //         [claimer],
+                    //         [firstClaim.label],
+                    //         [firstClaim.proof],
+                    //         {value: ethers.utils.parseEther('0.001')}
+                    //     );
+                    // await expect(transaction).to.emit(soulRegistrar, "Transfer");
+                    // const newBalance = await provider.getBalance(soulRegistrar.address);
+                    // expect(newBalance).to.be.gt(originalBalance);
                 });
 
                 it("registers the subdomain", async () => {
-                    const transaction = permissionContract
+                    const transaction = soulRegistrar
                         .connect(account1)
                         .registerWithProof(
-                            rootName,
                             firstClaim.rootNode,
                             shard,
                             [claimer],
@@ -331,10 +325,9 @@ describe("PermissionContract", () => {
 
                 describe(" for bulk claiming", () => {
                     it("reverts with unmatched input", async () => {
-                        const transaction = permissionContract
+                        const transaction = soulRegistrar
                             .connect(account1)
                             .registerWithProof(
-                                rootName,
                                 firstClaim.rootNode,
                                 shard,
                                 claimers,
@@ -342,14 +335,13 @@ describe("PermissionContract", () => {
                                 [firstClaim.proof, secondClaim.proof]
                             );
 
-                        await expect(transaction).to.be.revertedWith("PermissionContract: invalid params");
+                        await expect(transaction).to.be.revertedWith("InvalidParams()");
                     });
 
                     it("registers all the subdomains", async () => {
-                        const transaction = permissionContract
+                        const transaction = soulRegistrar
                             .connect(account1)
                             .registerWithProof(
-                                rootName,
                                 firstClaim.rootNode,
                                 shard,
                                 claimers,
@@ -374,12 +366,11 @@ describe("PermissionContract", () => {
 
             describe("when `registrable` is set to false", () => {
                 it("reverts the transaction", async () => {
-                    await permissionContract.connect(owner).setRegistrable(false);
+                    await soulRegistrar.connect(owner).setRegistrable(false);
 
-                    const transaction = permissionContract
+                    const transaction = soulRegistrar
                         .connect(account1)
                         .registerWithProof(
-                            rootName,
                             firstClaim.rootNode,
                             shard,
                             [claimer],
@@ -387,7 +378,7 @@ describe("PermissionContract", () => {
                             [firstClaim.proof]
                         );
 
-                    await expect(transaction).to.be.revertedWith("PermissionContract: registration is closed.");
+                    await expect(transaction).to.be.revertedWith("RegistrationHasNotStarted()");
 
                     const subdomainOwner = await ensRegistry.owner(
                         ethers.utils.namehash(`${firstClaim.label}.soul.xyz`)
@@ -398,10 +389,9 @@ describe("PermissionContract", () => {
 
             describe("when a claim has already been made", () => {
                 it("reverts the transaction", async () => {
-                    let transaction = permissionContract
+                    let transaction = soulRegistrar
                         .connect(account1)
                         .registerWithProof(
-                            rootName,
                             firstClaim.rootNode,
                             shard,
                             [claimer],
@@ -416,10 +406,9 @@ describe("PermissionContract", () => {
                     );
                     expect(subdomainOwner).to.eq(claimer);
 
-                    transaction = permissionContract
+                    transaction = soulRegistrar
                         .connect(account1)
                         .registerWithProof(
-                            rootName,
                             firstClaim.rootNode,
                             shard,
                             [claimer],
@@ -427,7 +416,7 @@ describe("PermissionContract", () => {
                             [firstClaim.proof]
                         );
 
-                    await expect(transaction).to.be.revertedWith("ENSRegistrar: label is already owned");
+                    await expect(transaction).to.be.revertedWith("SubdomainAlreadyOwned()");
 
                     subdomainOwner = await ensRegistry.owner(
                         ethers.utils.namehash(`${firstClaim.label}.soul.xyz`)
@@ -438,10 +427,9 @@ describe("PermissionContract", () => {
 
             describe("when a different claimer tries to claim with a proof", () => {
                 it("reverts the transaction", async () => {
-                    let transaction = permissionContract
+                    let transaction = soulRegistrar
                         .connect(account1)
                         .registerWithProof(
-                            rootName,
                             firstClaim.rootNode,
                             shard,
                             [claimers[1]],
@@ -449,7 +437,7 @@ describe("PermissionContract", () => {
                             [firstClaim.proof]
                         );
 
-                    await expect(transaction).to.be.revertedWith("PermissionContract: Invalid proof.");
+                    await expect(transaction).to.be.revertedWith("InvalidProof()");
 
                     const subdomainOwner = await ensRegistry.owner(
                         ethers.utils.namehash(`${firstClaim.label}.soul.xyz`)
@@ -495,7 +483,6 @@ describe("PermissionContract", () => {
         let merkleTreeInputs;
         let claimData;
         let shard = ethers.utils.id("0");
-        let rootName = "soul.xyz";
 
         beforeEach(async () => {
             merkleTreeInputs = [
@@ -517,7 +504,7 @@ describe("PermissionContract", () => {
             // be used to claim via NFT ownership.
             claimData = parseBalanceMap(merkleTreeInputs);
 
-            await permissionContract.connect(owner).setMerkleRoot(
+            await soulRegistrar.connect(owner).setMerkleRoot(
                 shard,
                 claimData.merkleRoot
             );
@@ -534,16 +521,14 @@ describe("PermissionContract", () => {
             expect(await admitOne.balanceOf(validOwner)).to.eq(1);
             // Now check that this owner can mint on the contract.
             let shard = ethers.utils.id("0");
-            let rootName = "soul.xyz";
             const desiredLabel = "king";
             const claimer = validOwner;
             const claim = claimData.claims[admitOne.address];
-            const transaction = permissionContract
+            const transaction = soulRegistrar
                 .connect(account1)
                 .registerWithNFTOwnership(
                     admitOne.address,
                     tokenId,
-                    rootName,
                     claim.rootNode,
                     desiredLabel,
                     shard,
@@ -558,12 +543,11 @@ describe("PermissionContract", () => {
             expect(subdomainOwner).to.eq(claimer);
 
             // Also we should not be able to mint again.
-            const transactionTwo = permissionContract
+            const transactionTwo = soulRegistrar
                 .connect(account1)
                 .registerWithNFTOwnership(
                     admitOne.address,
                     tokenId,
-                    rootName,
                     claim.rootNode,
                     `${desiredLabel}b`,
                     shard,
@@ -571,7 +555,7 @@ describe("PermissionContract", () => {
                 );
 
             await expect(transactionTwo).to.be.revertedWith(
-                "PermissionContract: already claimed."
+                "AlreadyClaimed()"
             );
         });
 
@@ -594,12 +578,11 @@ describe("PermissionContract", () => {
             let rootName = "soul.xyz";
             const desiredLabel = "king";
             const claim = claimData.claims[admitOne.address];
-            const transaction = permissionContract
+            const transaction = soulRegistrar
                 .connect(account1)
                 .registerWithNFTOwnership(
                     admitOne.address,
                     invalidTokenId,
-                    rootName,
                     claim.rootNode,
                     desiredLabel,
                     shard,
@@ -631,15 +614,13 @@ describe("PermissionContract", () => {
 
             // Now check that this owner can mint on the contract.
             let shard = ethers.utils.id("0");
-            let rootName = "soul.xyz";
             const desiredLabel = "king";
             const claim = claimData.claims[admitOne.address];
-            const transaction = permissionContract
+            const transaction = soulRegistrar
                 .connect(account1)
                 .registerWithNFTOwnership(
                     admitTwo.address,
                     validTokenId,
-                    rootName,
                     claim.rootNode,
                     desiredLabel,
                     shard,
@@ -647,7 +628,7 @@ describe("PermissionContract", () => {
                 );
 
             await expect(transaction).to.be.revertedWith(
-                "PermissionContract: Invalid proof."
+                "InvalidProof()"
             );
 
             const subdomainOwner = await ensRegistry.owner(
