@@ -151,7 +151,8 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
     // ========================= Subdomain Registration ========================
 
     /**
-     * Burns the sender's invite tokens and registers an ENS given label to a given address.
+     * This method registers an ENS given label to a given address, provided that there is a proof of its
+     * inclusion (label and owner address) in the membership merkle tree.
      * Before calling this function, the root node owner should already called setApprovalForAll
      * on ENSRegistry to add this contract as the root node's authorised operator.
      * @param rootNode The hashed node for the ens root
@@ -198,7 +199,8 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
     }
 
     /**
-     * @notice Allow membership NFT owner to claim ENS subdomain of the root node.
+     * @notice Allow membership NFT owner to claim ENS subdomain of the root node. Only one subdomain can be
+     * claimed per NFT token ID.
      * Before calling this function, the root node owner should already called setApprovalForAll
      * on ENSRegistry to add this contract as the root node's authorised operator.
      * @param nftContract The contract address of the membership NFT
