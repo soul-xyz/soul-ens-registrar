@@ -53,7 +53,7 @@ async function setup() {
   await admitTwo.deployed();
 
   return {
-    originalOwner: owner,
+    relayer: admitTwo,
     soulRegistrar,
     ensRegistry,
     ensResolver,
