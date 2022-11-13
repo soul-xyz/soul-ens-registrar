@@ -17,5 +17,5 @@ interface ISoulRegistrar {
         string calldata label,
         bytes32 rootShard,
         bytes32[] calldata merkleProof
-    ) external payable;
+    ) external;
 }

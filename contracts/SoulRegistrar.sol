@@ -220,7 +220,6 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
         bytes32[] calldata merkleProof
     )
         external
-        payable
         canRegister
     {
         bytes32 claimId = keccak256(abi.encodePacked(tokenId, nftContract));

@@ -291,7 +291,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
@@ -301,7 +301,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     registerWithProof(
@@ -469,7 +469,7 @@ export class SoulRegistrar extends Contract {
     label: string,
     rootShard: BytesLike,
     merkleProof: BytesLike[],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
@@ -479,7 +479,7 @@ export class SoulRegistrar extends Contract {
     label: string,
     rootShard: BytesLike,
     merkleProof: BytesLike[],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   registerWithProof(
@@ -853,7 +853,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
@@ -863,7 +863,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     registerWithProof(
@@ -1031,7 +1031,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
@@ -1041,7 +1041,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     registerWithProof(
