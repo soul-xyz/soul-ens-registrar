@@ -18,7 +18,7 @@ describe("SoulRegistrar", () => {
     let account1;
     let account2;
     let account3;
-    let originalOwner;
+    let relayer;
 
     // Fees
     let feeConfig;
@@ -29,7 +29,7 @@ describe("SoulRegistrar", () => {
             // ensRegistrar,
             ensRegistry,
             ensResolver,
-            originalOwner,
+            relayer,
             admitOne,
             admitTwo
         } = await setup());
@@ -42,47 +42,46 @@ describe("SoulRegistrar", () => {
         };
     });
 
-    describe("deployed", () => {
-        // it("the soulRegistrar has the correct registrar", async () => {
-        //     const receivedENSRegistrar = await soulRegistrar.ensRegistrar();
-        //     expect(receivedENSRegistrar).to.eq(
-        //         ensRegistrar.address
-        //     );
-        // });
+    const claimData = {
+        "merkleRoot": "0x3d3e67e1580879652bce1393e5c826b3765ea82ae754b98f5d49f7154c1a06bb",
+        "claims": {
+            "0x012A4ddc4A4f669bAa7327A589F8bDc5e8b494A4": {
+                "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+                "label": "test",
+                "proof": ["0xfed0d3817a55adf894ceb6a57a021d73ada2ffc8453d4d578ffb2625e4272bf1"]
+            },
+            "0xFB72CD75d0b9022810F7748Dd36D767836FBcBDE": {
+                "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
+                "label": "another",
+                "proof": ["0x7c7c3cfa754af2c0854e43498a32b1b5ba40f5196e2a03cf1698baac3817417b"]
+            }
+        }
+    }
+    const shard = ethers.utils.id("0");
 
+    describe("deployed", () => {
         it("has registrable set to true", async () => {
             const isRegistrable = await soulRegistrar.registrable();
             expect(isRegistrable).to.eq(true);
         });
     });
 
-    describe("#setENSRegistrar", () => {
-        describe("when called by the owner", () => {
-            // it("updates the registrar appropriately", async () => {
-            //     // Set it to a new address, and check that it updated correctly.
-            //     const newAddress = "0xC85Ef1106632B9e7F8DE9cE0c0f1de1F70E67694";
-            //     await soulRegistrar.connect(owner).setENSRegistrar(newAddress);
-            //
-            //     expect(await soulRegistrar.ensRegistrar()).to.eq(newAddress);
-            //
-            //     // Set it back to the actual registrar, and check that it updated correctly again.
-            //     await soulRegistrar.connect(owner).setENSRegistrar(ensRegistrar.address);
-            //     expect(await soulRegistrar.ensRegistrar()).to.eq(ensRegistrar.address);
-            // });
+    describe("#setRelayer", () => {
+        describe("when called by an address that is not the owner", () => {
+            it("reverts the transaction", async () => {
+                const transaction = soulRegistrar.connect(account1).setRelayer(relayer.address);
+                await expect(transaction).to.be.revertedWith(
+                    "Ownable: caller is not the owner"
+                );
+            });
         });
 
-        describe("when called by a non-owner account", () => {
-            // it("it reverts the transaction", async () => {
-            //     // Set it to a new address, and check that it updated correctly.
-            //     const newAddress = "0xC85Ef1106632B9e7F8DE9cE0c0f1de1F70E67694";
-            //     const transaction = soulRegistrar.connect(account1).setENSRegistrar(newAddress);
-            //     await expect(transaction).to.be.revertedWith(
-            //         "Ownable: caller is not the owner"
-            //     );
-            //
-            //     // Original registrar still set.
-            //     expect(await soulRegistrar.ensRegistrar()).to.eq(ensRegistrar.address);
-            // });
+        describe("when called by the owner", () => {
+            it("updates the relayer variable appropriately", async () => {
+                expect(await soulRegistrar.relayer()).to.eq(owner.address);
+                await soulRegistrar.connect(owner).setRelayer(relayer.address);
+                expect(await soulRegistrar.relayer()).to.eq(relayer.address);
+            });
         });
     });
 
@@ -107,6 +106,24 @@ describe("SoulRegistrar", () => {
         });
     });
 
+    describe("#setMerkleRoot", () => {
+        describe("when called by an address that is not the relayer", () => {
+            it("reverts the transaction", async () => {
+                const transaction = soulRegistrar.connect(account1).setMerkleRoot(shard, claimData.merkleRoot);
+                await expect(transaction).to.be.revertedWith("Unauthorized()");
+            });
+        });
+
+        describe("when called by relayer", () => {
+            it("set the merkle root successfully", async () => {
+                const transaction = soulRegistrar.connect(owner).setMerkleRoot(shard, claimData.merkleRoot);
+                await expect(transaction).to.not.to.be.reverted;
+                const merkleRoot = await soulRegistrar.merkleRoots(shard);
+                expect(merkleRoot).to.eq("0x3d3e67e1580879652bce1393e5c826b3765ea82ae754b98f5d49f7154c1a06bb");
+            });
+        });
+    });
+
     describe("#setRegistrationFee", () => {
         describe("when called by an address that is not the root provider", () => {
             it("reverts the transaction", async () => {
@@ -114,9 +131,7 @@ describe("SoulRegistrar", () => {
                     "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
                     feeConfig
                 );
-                await expect(transaction).to.be.revertedWith(
-                    "Unauthorized()"
-                );
+                await expect(transaction).to.be.revertedWith("Unauthorized()");
             });
         });
 
@@ -159,25 +174,6 @@ describe("SoulRegistrar", () => {
     });
 
     describe("#registerWithProof", () => {
-        let claimData = {
-            "merkleRoot": "0x3d3e67e1580879652bce1393e5c826b3765ea82ae754b98f5d49f7154c1a06bb",
-            "claims": {
-                "0x012A4ddc4A4f669bAa7327A589F8bDc5e8b494A4": {
-                    "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
-                    "label": "test",
-                    "proof": ["0xfed0d3817a55adf894ceb6a57a021d73ada2ffc8453d4d578ffb2625e4272bf1"]
-                },
-                "0xFB72CD75d0b9022810F7748Dd36D767836FBcBDE": {
-                    "rootNode": "0x1bfa2242f886ea18243d1819dc7da69fdb0c3298e71a41c29522d7c9ac40d71e",
-                    "label": "another",
-                    "proof": ["0x7c7c3cfa754af2c0854e43498a32b1b5ba40f5196e2a03cf1698baac3817417b"]
-                }
-            }
-        }
-
-        let shard = ethers.utils.id("0");
-        let rootName = "soul.xyz";
-
         // Quick detour here...
         // describe("ENSRegistry", () => {
         //     describe("#storeCurrentOwner", () => {
@@ -287,24 +283,24 @@ describe("SoulRegistrar", () => {
                         firstClaim.rootNode,
                         feeConfig
                     );
-                    // soulRegistrar.connect(owner).setCommissionBips(9000);
-                    //
-                    // const transaction = soulRegistrar
-                    //     .connect(account1)
-                    //     .registerWithProof(
-                    //         firstClaim.rootNode,
-                    //         shard,
-                    //         [claimer],
-                    //         [firstClaim.label],
-                    //         [firstClaim.proof],
-                    //         {value: ethers.utils.parseEther('0.001')}
-                    //     );
-                    // await expect(transaction).to.emit(soulRegistrar, "Transfer");
-                    // const newBalance = await provider.getBalance(soulRegistrar.address);
-                    // expect(newBalance).to.be.gt(originalBalance);
+                    soulRegistrar.connect(owner).setCommissionBips(9000);
+
+                    const transaction = soulRegistrar
+                        .connect(account1)
+                        .registerWithProof(
+                            firstClaim.rootNode,
+                            shard,
+                            [claimer],
+                            [firstClaim.label],
+                            [firstClaim.proof],
+                            {value: ethers.utils.parseEther('0.001')}
+                        );
+                    await expect(transaction).to.emit(soulRegistrar, "FeePayout");
+                    const newBalance = await provider.getBalance(soulRegistrar.address);
+                    expect(newBalance).to.be.gt(originalBalance);
                 });
 
-                it("registers the subdomain", async () => {
+                it("registers the subdomain successfully", async () => {
                     const transaction = soulRegistrar
                         .connect(account1)
                         .registerWithProof(
@@ -336,6 +332,18 @@ describe("SoulRegistrar", () => {
                             );
 
                         await expect(transaction).to.be.revertedWith("InvalidParams()");
+
+                        const transaction2 = soulRegistrar
+                            .connect(account1)
+                            .registerWithProof(
+                                firstClaim.rootNode,
+                                shard,
+                                claimers,
+                                [firstClaim.label, secondClaim.label],
+                                [firstClaim.proof]
+                            );
+
+                        await expect(transaction2).to.be.revertedWith("InvalidParams()");
                     });
 
                     it("registers all the subdomains", async () => {
@@ -510,6 +518,33 @@ describe("SoulRegistrar", () => {
             );
         });
 
+        describe("when `registrable` is set to false", () => {
+            it("reverts the transaction", async () => {
+                await soulRegistrar.connect(owner).setRegistrable(false);
+
+                const tokenId = 1;
+                const claim = claimData.claims[admitOne.address];
+                const desiredLabel = "test";
+                const transaction = soulRegistrar
+                    .connect(account1)
+                    .registerWithNFTOwnership(
+                        admitOne.address,
+                        tokenId,
+                        claim.rootNode,
+                        desiredLabel,
+                        shard,
+                        claim.proof
+                    );
+
+                await expect(transaction).to.be.revertedWith("RegistrationHasNotStarted()");
+
+                const subdomainOwner = await ensRegistry.owner(
+                    ethers.utils.namehash(`test.soul.xyz`)
+                );
+                expect(subdomainOwner).to.eq(ethers.constants.AddressZero);
+            });
+        });
+
         it("allows minting from ownership", async () => {
             const admitOneOwner = await admitOne.owner();
             const validOwner = account1.address;
@@ -559,45 +594,82 @@ describe("SoulRegistrar", () => {
             );
         });
 
-        it("does not allow minting without ownership", async () => {
-            const admitOneOwner = await admitOne.owner();
-            const validOwner = account1.address;
-            expect(owner.address).to.eq(admitOneOwner);
+        describe("minting without right ownership", () => {
+            describe("when minter does not own the NFT", () => {
+                it("reverts the transaction", async () => {
+                    const admitOneOwner = await admitOne.owner();
+                    const validOwner = account1.address;
+                    expect(owner.address).to.eq(admitOneOwner);
 
-            const validTokenId = 1;
-            await admitOne.connect(owner).ownerMint(validOwner, validTokenId);
-            // Check that the balances updated properly.
-            expect(await admitOne.ownerOf(validTokenId)).to.eq(validOwner);
-            expect(await admitOne.balanceOf(validOwner)).to.eq(1);
+                    const validTokenId = 1;
+                    await admitOne.connect(owner).ownerMint(validOwner, validTokenId);
+                    // Check that the balances updated properly.
+                    expect(await admitOne.ownerOf(validTokenId)).to.eq(validOwner);
+                    expect(await admitOne.balanceOf(validOwner)).to.eq(1);
 
-            // Changing to tokenId 2 should disallow minting, since there is no owner.
-            const invalidTokenId = 2;
+                    const admitOneLabel = "test";
+                    const admitOneClaim = claimData.claims[admitOne.address];
+                    const transaction = soulRegistrar
+                        .connect(account2)
+                        .registerWithNFTOwnership(
+                            admitOne.address,
+                            validTokenId,
+                            admitOneClaim.rootNode,
+                            admitOneLabel,
+                            shard,
+                            admitOneClaim.proof
+                        );
 
-            // Now check that this owner can mint on the contract.
-            let shard = ethers.utils.id("0");
-            let rootName = "soul.xyz";
-            const desiredLabel = "king";
-            const claim = claimData.claims[admitOne.address];
-            const transaction = soulRegistrar
-                .connect(account1)
-                .registerWithNFTOwnership(
-                    admitOne.address,
-                    invalidTokenId,
-                    claim.rootNode,
-                    desiredLabel,
-                    shard,
-                    claim.proof
-                );
+                    await expect(transaction).to.be.revertedWith("Unauthorized()");
 
-            await expect(transaction).to.be.revertedWith(
-                "ERC721: owner query for nonexistent token"
-            );
+                    const subdomainOwnerAdmitOne = await ensRegistry.owner(
+                        ethers.utils.namehash(`${admitOneLabel}.soul.xyz`)
+                    );
+                    expect(subdomainOwnerAdmitOne).to.eq(ethers.constants.AddressZero);
+                });
+            });
 
-            const subdomainOwner = await ensRegistry.owner(
-                ethers.utils.namehash(`${desiredLabel}.soul.xyz`)
-            );
-            expect(subdomainOwner).to.eq(ethers.constants.AddressZero);
-        })
+            describe("when minter with wrong token id", () => {
+                it("does not allow minting", async () => {
+                    const admitOneOwner = await admitOne.owner();
+                    const validOwner = account1.address;
+                    expect(owner.address).to.eq(admitOneOwner);
+
+                    const validTokenId = 1;
+                    await admitOne.connect(owner).ownerMint(validOwner, validTokenId);
+                    // Check that the balances updated properly.
+                    expect(await admitOne.ownerOf(validTokenId)).to.eq(validOwner);
+                    expect(await admitOne.balanceOf(validOwner)).to.eq(1);
+
+                    let shard = ethers.utils.id("0");
+                    // Changing to tokenId 2 should disallow minting, since there is no owner.
+                    const invalidTokenId = 2;
+
+                    // Now check that this owner can mint on the contract.
+                    const desiredLabel = "king";
+                    const claim = claimData.claims[admitOne.address];
+                    const transaction = soulRegistrar
+                        .connect(account1)
+                        .registerWithNFTOwnership(
+                            admitOne.address,
+                            invalidTokenId,
+                            claim.rootNode,
+                            desiredLabel,
+                            shard,
+                            claim.proof
+                        );
+
+                    await expect(transaction).to.be.revertedWith(
+                        "ERC721: owner query for nonexistent token"
+                    );
+
+                    const subdomainOwner = await ensRegistry.owner(
+                        ethers.utils.namehash(`${desiredLabel}.soul.xyz`)
+                    );
+                    expect(subdomainOwner).to.eq(ethers.constants.AddressZero);
+                })
+            });
+        });
 
         it("does not allow minting with another ERC20", async () => {
             const admitTwoOwner = await admitTwo.owner();
@@ -636,5 +708,22 @@ describe("SoulRegistrar", () => {
             );
             expect(subdomainOwner).to.eq(ethers.constants.AddressZero);
         })
+    });
+
+    describe("#withdrawFees", () => {
+        describe("when it called by addressed is not owner", () => {
+            it("reverts the transaction", async () => {
+                const transaction = soulRegistrar.connect(account1).withdrawFees(account1.address);
+                await expect(transaction).to.be.revertedWith("Ownable: caller is not the owner");
+            });
+        });
+
+        describe("when called by the owner", () => {
+            it("withdraws the balance", async () => {
+                const transaction = soulRegistrar.connect(owner).withdrawFees(owner.address);
+                await expect(transaction).to.emit(soulRegistrar, "FeeWithdrawal");
+                await expect(transaction).not.to.be.reverted;
+            });
+        });
     });
 });

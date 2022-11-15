@@ -5,6 +5,7 @@ import '@nomiclabs/hardhat-solhint';
 import '@nomiclabs/hardhat-etherscan';
 
 import 'hardhat-typechain';
+import 'solidity-coverage'
 
 const { alchemyAPIKey, deployerPrivateKey, etherscanAPIKey } = require('./env.json');
 

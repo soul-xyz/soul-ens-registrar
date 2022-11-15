@@ -52,7 +52,7 @@ const _abi = [
     ],
     name: "registerWithNFTOwnership",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

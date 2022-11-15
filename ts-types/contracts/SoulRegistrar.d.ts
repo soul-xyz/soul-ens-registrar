@@ -41,8 +41,9 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     "setMerkleRoot(bytes32,bytes32)": FunctionFragment;
     "setRegistrable(bool)": FunctionFragment;
     "setRegistrationFee(bytes32,tuple)": FunctionFragment;
+    "setRelayer(address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "withdrawFees(address,uint256)": FunctionFragment;
+    "withdrawFees(address)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -111,13 +112,14 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     functionFragment: "setRegistrationFee",
     values: [BytesLike, { recipient: string; fee: BigNumberish }]
   ): string;
+  encodeFunctionData(functionFragment: "setRelayer", values: [string]): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawFees",
-    values: [string, BigNumberish]
+    values: [string]
   ): string;
 
   decodeFunctionResult(
@@ -180,6 +182,7 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     functionFragment: "setRegistrationFee",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setRelayer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -199,6 +202,7 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     "OwnershipTransferred(address,address)": EventFragment;
     "RegisteredSubdomain(bytes32,string,address)": EventFragment;
     "RegistrableUpdated(bool)": EventFragment;
+    "RelayerUpdated(address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "CommissionBipsUpdated"): EventFragment;
@@ -210,6 +214,7 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RegisteredSubdomain"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RegistrableUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RelayerUpdated"): EventFragment;
 }
 
 export class SoulRegistrar extends Contract {
@@ -286,7 +291,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
@@ -296,7 +301,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     registerWithProof(
@@ -373,6 +378,16 @@ export class SoulRegistrar extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    setRelayer(
+      newRelayer: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setRelayer(address)"(
+      newRelayer: string,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides
@@ -385,13 +400,11 @@ export class SoulRegistrar extends Contract {
 
     withdrawFees(
       to: string,
-      value: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "withdrawFees(address,uint256)"(
+    "withdrawFees(address)"(
       to: string,
-      value: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
@@ -456,7 +469,7 @@ export class SoulRegistrar extends Contract {
     label: string,
     rootShard: BytesLike,
     merkleProof: BytesLike[],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
@@ -466,7 +479,7 @@ export class SoulRegistrar extends Contract {
     label: string,
     rootShard: BytesLike,
     merkleProof: BytesLike[],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   registerWithProof(
@@ -543,6 +556,16 @@ export class SoulRegistrar extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  setRelayer(
+    newRelayer: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setRelayer(address)"(
+    newRelayer: string,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   transferOwnership(
     newOwner: string,
     overrides?: Overrides
@@ -553,15 +576,10 @@ export class SoulRegistrar extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  withdrawFees(
-    to: string,
-    value: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
+  withdrawFees(to: string, overrides?: Overrides): Promise<ContractTransaction>;
 
-  "withdrawFees(address,uint256)"(
+  "withdrawFees(address)"(
     to: string,
-    value: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -713,6 +731,13 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setRelayer(newRelayer: string, overrides?: CallOverrides): Promise<void>;
+
+    "setRelayer(address)"(
+      newRelayer: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     transferOwnership(
       newOwner: string,
       overrides?: CallOverrides
@@ -723,15 +748,10 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    withdrawFees(
-      to: string,
-      value: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    withdrawFees(to: string, overrides?: CallOverrides): Promise<void>;
 
-    "withdrawFees(address,uint256)"(
+    "withdrawFees(address)"(
       to: string,
-      value: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -771,6 +791,8 @@ export class SoulRegistrar extends Contract {
     ): EventFilter;
 
     RegistrableUpdated(newRegistrable: null): EventFilter;
+
+    RelayerUpdated(newRelayer: null): EventFilter;
   };
 
   estimateGas: {
@@ -831,7 +853,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
@@ -841,7 +863,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     registerWithProof(
@@ -918,6 +940,13 @@ export class SoulRegistrar extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    setRelayer(newRelayer: string, overrides?: Overrides): Promise<BigNumber>;
+
+    "setRelayer(address)"(
+      newRelayer: string,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides
@@ -928,15 +957,10 @@ export class SoulRegistrar extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    withdrawFees(
-      to: string,
-      value: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    withdrawFees(to: string, overrides?: Overrides): Promise<BigNumber>;
 
-    "withdrawFees(address,uint256)"(
+    "withdrawFees(address)"(
       to: string,
-      value: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
   };
@@ -1007,7 +1031,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])"(
@@ -1017,7 +1041,7 @@ export class SoulRegistrar extends Contract {
       label: string,
       rootShard: BytesLike,
       merkleProof: BytesLike[],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     registerWithProof(
@@ -1094,6 +1118,16 @@ export class SoulRegistrar extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
+    setRelayer(
+      newRelayer: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setRelayer(address)"(
+      newRelayer: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides
@@ -1106,13 +1140,11 @@ export class SoulRegistrar extends Contract {
 
     withdrawFees(
       to: string,
-      value: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "withdrawFees(address,uint256)"(
+    "withdrawFees(address)"(
       to: string,
-      value: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
   };

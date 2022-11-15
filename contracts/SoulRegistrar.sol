@@ -57,6 +57,7 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
 
     // ================================ Events ==============================
 
+    event RelayerUpdated(address newRelayer);
     event RegistrableUpdated(bool newRegistrable);
     event RegisteredSubdomain(bytes32 indexed rootNode, string label, address receiver);
     event MerkleRootUpdated(bytes32 indexed rootShard, bytes32 newMerkleRoot);
@@ -106,7 +107,7 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
         setRegistrable(true);
     }
 
-    // ====================== Configuration Management =========================
+    // ====================== Configuration Management ========================
 
     /**
      * Allows the owner to pause registration.
@@ -114,6 +115,14 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
     function setRegistrable(bool newRegistrable) public onlyOwner {
         registrable = newRegistrable;
         emit RegistrableUpdated(newRegistrable);
+    }
+
+    /**
+     * Allows the owner to set a relayer address
+     */
+    function setRelayer(address newRelayer) public onlyOwner {
+        _relayer = newRelayer;
+        emit RelayerUpdated(newRelayer);
     }
 
     /**
@@ -186,15 +195,7 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
 
         for (uint i = 0; i < receivers.length; i++) {
             bytes32 merkleLeaf = keccak256(abi.encodePacked(receivers[i], rootNode, labels[i]));
-
-            _register(
-                rootNode,
-                rootShard,
-                receivers[i],
-                labels[i],
-                merkleProofs[i],
-                merkleLeaf
-            );
+            _register(rootNode, rootShard, receivers[i], labels[i], merkleProofs[i], merkleLeaf);
         }
     }
 
@@ -274,9 +275,10 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
 
     // ========================== Admin Functions ==========================
 
-    function withdrawFees(address payable to, uint256 value) external onlyOwner
+    function withdrawFees(address payable to) external onlyOwner
     {
-        Address.sendValue(to, value);
-        emit FeeWithdrawal(address(this), to, value);
+        uint256 balance = address(this).balance;
+        Address.sendValue(to, balance);
+        emit FeeWithdrawal(address(this), to, balance);
     }
 }
