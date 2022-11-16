@@ -3,19 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:soul-xyz/ens-registry.git",
-  "author": "<graemelearn@protonmail.com>",
   "license": "MIT",
   "scripts": {
     "test": "hardhat test",
-    "generate:proofs": "ts-node merkle-distribution/generate-merkle-root.ts",
-    "flatten:PermissionContract": "npx hardhat flatten contracts/PermissionContract.sol > flattened/PermissionContract.sol",
-    "flatten:ENSResolver": "npx hardhat flatten contracts/ens/ENSResolver.sol > flattened/ENSResolver.sol",
-    "verify:goerli": "hardhat verify --network goerli 0xDEB264E1F78FcD54A0a0aBbCd78F1898aDe26D26",
+    "verify:goerli": "hardhat verify --network goerli",
     "deploy:default": "hardhat run scripts/deploy.ts",
     "deploy:goerli": "hardhat run --network goerli scripts/deploy.ts",
     "deploy:mainnet": "hardhat run --network mainnet scripts/deploy.ts",
-    "deploy:registrar:default": "hardhat run scripts/deploy-registrar.ts",
-    "deploy:registrar:goerli": "hardhat run --network rinkeby scripts/deploy-registrar.ts"
   },
   "dependencies": {
     "@nomiclabs/hardhat-solhint": "^2.0.0",
