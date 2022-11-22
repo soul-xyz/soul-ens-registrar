@@ -59,7 +59,7 @@ async function main() {
     console.log({admitOneAddress});
   }
 
-  if (isLocal) {
+  if (networkName != "mainnet") {
     console.log("deploying ENS registry");
     const ENSRegistry = await ethers.getContractFactory("ENSRegistry");
     ensRegistry = await ENSRegistry.deploy();
