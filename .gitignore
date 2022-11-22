@@ -11,3 +11,5 @@ env*
 .tool-versions
 coverage.json
 *.log
+contracts/ts-types
+scripts/ts-types

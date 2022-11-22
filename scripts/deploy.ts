@@ -3,10 +3,14 @@ import fs from "fs";
 
 const config = {
   production: {
+    OWNER_ADDRESS: "???",
     ENS_REGISTRY_ADDRESS: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    ENS_PUBLIC_RESOLVER_ADDRESS: "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
   },
   test: {
+    OWNER_ADDRESS: "???",
     ENS_REGISTRY_ADDRESS: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    ENS_PUBLIC_RESOLVER_ADDRESS: "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
   },
 };
 
@@ -29,18 +33,18 @@ async function main() {
 
   isLocal = networkName === "hardhat";
 
-  let owner;
-  let ensAddress;
+  let ensRegistryAddress;
   let ensRegistry;
+  let ensResolverAddress;
+  let OWNER_ADDRESS;
   let ENS_REGISTRY_ADDRESS;
-  let ROOT_NAME;
-  let ROOT_NODE;
+  let ENS_PUBLIC_RESOLVER_ADDRESS;
   let admitOneAddress;
 
   if (networkName === "mainnet") {
-    ({ ENS_REGISTRY_ADDRESS } = config.production);
+    ({ OWNER_ADDRESS, ENS_REGISTRY_ADDRESS, ENS_PUBLIC_RESOLVER_ADDRESS } = config.production);
   } else {
-    ({ ENS_REGISTRY_ADDRESS } = config.test);
+    ({ OWNER_ADDRESS, ENS_REGISTRY_ADDRESS, ENS_PUBLIC_RESOLVER_ADDRESS } = config.test);
 
     console.log("Deploying AdmitOne");
 
@@ -61,49 +65,35 @@ async function main() {
     ensRegistry = await ENSRegistry.deploy();
     await ensRegistry.deployed();
 
-    ensAddress = ensRegistry.address;
+    ensRegistryAddress = ensRegistry.address;
+    console.log({ensRegistryAddress});
+
+    console.log("deploying ENS Resolver");
+    const ENSResolver = await ethers.getContractFactory("ENSResolver");
+    const ensResolver = await ENSResolver.deploy();
+    await ensResolver.deployed();
+
+    ensResolverAddress = ensResolver.address;
+    console.log({ensResolverAddress});
   } else {
-    ensAddress = ENS_REGISTRY_ADDRESS;
+    ensRegistryAddress = ENS_REGISTRY_ADDRESS;
+    ensResolverAddress = ENS_PUBLIC_RESOLVER_ADDRESS;
   }
 
-  console.log("Deploying PermissionContract");
-  const PermissionContract = await ethers.getContractFactory("PermissionContract");
-  const permissionContract = await PermissionContract.deploy();
-  await permissionContract.deployed();
-
-  console.log("Deploying ENS Resolver");
-  const ENSResolver = await ethers.getContractFactory(
-    "ENSResolver"
+  console.log("Deploying SoulRegistrar");
+  const SoulRegistrarContract = await ethers.getContractFactory("SoulRegistrar");
+  const soulRegistrarContract = await SoulRegistrarContract.deploy(
+    ensRegistryAddress,
+    ensResolverAddress,
   );
-  const ensResolver = await ENSResolver.deploy();
-  await ensResolver.deployed();
+  await soulRegistrarContract.deployed();
 
-  console.log("Deploying ENS Registrar");
-  const ENSRegistrar = await ethers.getContractFactory(
-    "ENSRegistrar"
-  );
-  const ensRegistrar = await ENSRegistrar.deploy(
-    ensAddress,
-    ensResolver.address,
-    permissionContract.address
-  );
-  await ensRegistrar.deployed();
-
-  // TODO: Would be good to have some kind of backup thing here, too.
-  await ensResolver.transferOwnership(ensRegistrar.address);
-
-  console.log("Setting registrar on Permission Contract");
-  await permissionContract.setENSRegistrar(ensRegistrar.address);
-  console.log("Transferring ownership of Resolver to Registrar");
-  await permissionContract.transferOwnership(ensRegistrar.address);
-  console.log("Updating ENS Reverse Registrar");
+  await soulRegistrarContract.transferOwnership(OWNER_ADDRESS);
 
   const info = {
     Contracts: {
-      PermissionContract: permissionContract.address,
-      ENSResolver: ensResolver.address,
-      ENSRegistrar: ensRegistrar.address,
-      admitOneAddress
+      admitOneAddress,
+      SoulRegistrarAddress: soulRegistrarContract.address
     },
   };
 
