@@ -5,10 +5,10 @@ import '@nomiclabs/hardhat-solhint';
 import '@nomiclabs/hardhat-etherscan';
 
 import 'hardhat-typechain';
-import 'solidity-coverage'
+import 'solidity-coverage';
+import 'hardhat-gas-reporter';
 
-const { alchemyAPIKey, deployerPrivateKey, etherscanAPIKey } = require('./env.json');
-
+const { alchemyAPIKey, deployerPrivateKey, etherscanAPIKey, coinmarketcapAPIKey } = require('./env.json');
 
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
@@ -36,8 +36,13 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: etherscanAPIKey
-  }
+    apiKey: etherscanAPIKey,
+  },
+  gasReporter: {
+    enabled: true,
+    currency: 'USD',
+    coinmarketcap: coinmarketcapAPIKey,
+  },
 };
 
 export default config;
