@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IENS} from "./ens/interfaces/IENS.sol";
 import {IENSResolver} from "./ens/interfaces/IENSResolver.sol";
@@ -10,7 +11,7 @@ import {IENSRegistrar} from "./ens/interfaces/IENSRegistrar.sol";
 import "./ens/interfaces/ISoulRegistrar.sol";
 import {IERC721} from "./lib/ERC721/interface/IERC721.sol";
 
-contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
+contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
 
     // ======================== Immutable Storage ========================
     /**
@@ -180,6 +181,7 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step {
         external
         payable
         canRegister
+        nonReentrant
     {
         if(receivers.length != labels.length || receivers.length != merkleProofs.length) revert InvalidParams();
 
