@@ -3,12 +3,14 @@ import fs from "fs";
 
 const config = {
   production: {
-    OWNER_ADDRESS: "???",
+    // The official Soul multisig
+    OWNER_ADDRESS: "0xbffb74Cd77bcDB7418F30A6734f8e0991a1d6Db3",
     ENS_REGISTRY_ADDRESS: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     ENS_PUBLIC_RESOLVER_ADDRESS: "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
   },
   test: {
-    OWNER_ADDRESS: "???",
+    // Graeme's multisig signer address 1
+    OWNER_ADDRESS: "0xDF5657aB94dD8927A63E4c3043d3d57a3b552aa7",
     ENS_REGISTRY_ADDRESS: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
     ENS_PUBLIC_RESOLVER_ADDRESS: "0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41",
   },
