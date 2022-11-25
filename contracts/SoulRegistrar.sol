@@ -269,8 +269,14 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
 
         if(ensRegistry.owner(node) != address(0)) revert SubdomainAlreadyOwned();
 
-        ensRegistry.setSubnodeRecord(rootNode, labelNode, receiver, address(ensResolver), 0);
+        // mint the subdomain to this contract first
+        ensRegistry.setSubnodeRecord(rootNode, labelNode, address(this), address(ensResolver), 0);
+
+        // resolve the subdomain to receiver as owner
         ensResolver.setAddr(node, receiver);
+
+        // transfer the subdomain to user
+        ensRegistry.setSubnodeOwner(rootNode, labelNode, receiver);
 
         emit RegisteredSubdomain(rootNode, label, receiver);
     }
