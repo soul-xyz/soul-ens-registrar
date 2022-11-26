@@ -23,7 +23,6 @@ async function setup() {
   );
   await soulRegistrar.deployed();
 
-  await ensResolver.transferOwnership(soulRegistrar.address);
 
   // Setup root.
   await ensRegistry.setSubnodeOwner(
@@ -37,6 +36,11 @@ async function setup() {
     owner.address
   );
   await ensRegistry.connect(owner).setApprovalForAll(
+    soulRegistrar.address,
+    true
+  );
+
+  await ensResolver.connect(owner).setApprovalForAll(
     soulRegistrar.address,
     true
   );
