@@ -24,24 +24,39 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 interface SoulRegistrarInterface extends ethers.utils.Interface {
   functions: {
     "acceptOwnership()": FunctionFragment;
+    "approve(address,uint256)": FunctionFragment;
+    "balanceOf(address)": FunctionFragment;
+    "baseURI()": FunctionFragment;
     "claimed(bytes32,bytes32)": FunctionFragment;
     "commissionBips()": FunctionFragment;
     "ensRegistry()": FunctionFragment;
     "ensResolver()": FunctionFragment;
     "feeConfigs(bytes32)": FunctionFragment;
+    "getApproved(uint256)": FunctionFragment;
+    "isApprovedForAll(address,address)": FunctionFragment;
     "merkleRoots(bytes32)": FunctionFragment;
+    "name()": FunctionFragment;
     "owner()": FunctionFragment;
+    "ownerOf(uint256)": FunctionFragment;
     "pendingOwner()": FunctionFragment;
     "registerWithNFTOwnership(address,uint256,bytes32,string,bytes32,bytes32[])": FunctionFragment;
     "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])": FunctionFragment;
     "registrable()": FunctionFragment;
     "relayer()": FunctionFragment;
+    "renderer()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "safeTransferFrom(address,address,uint256)": FunctionFragment;
+    "setApprovalForAll(address,bool)": FunctionFragment;
     "setCommissionBips(uint256)": FunctionFragment;
     "setMerkleRoot(bytes32,bytes32)": FunctionFragment;
     "setRegistrable(bool)": FunctionFragment;
     "setRegistrationFee(bytes32,tuple)": FunctionFragment;
     "setRelayer(address)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
+    "symbol()": FunctionFragment;
+    "tokenURI(uint256)": FunctionFragment;
+    "totalSupply()": FunctionFragment;
+    "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "withdrawFees(address)": FunctionFragment;
   };
@@ -50,6 +65,12 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     functionFragment: "acceptOwnership",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "approve",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
+  encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "claimed",
     values: [BytesLike, BytesLike]
@@ -71,10 +92,23 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getApproved",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isApprovedForAll",
+    values: [string, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "merkleRoots",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "ownerOf",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "pendingOwner",
     values?: undefined
@@ -92,9 +126,18 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "relayer", values?: undefined): string;
+  encodeFunctionData(functionFragment: "renderer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "safeTransferFrom",
+    values: [string, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setApprovalForAll",
+    values: [string, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "setCommissionBips",
@@ -114,6 +157,23 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "setRelayer", values: [string]): string;
   encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "tokenURI",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupply",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferFrom",
+    values: [string, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
@@ -126,6 +186,9 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     functionFragment: "acceptOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "claimed", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "commissionBips",
@@ -141,10 +204,20 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "feeConfigs", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "getApproved",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isApprovedForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "merkleRoots",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pendingOwner",
     data: BytesLike
@@ -162,8 +235,17 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "relayer", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "renderer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "safeTransferFrom",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -184,6 +266,20 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setRelayer", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferFrom",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
@@ -193,6 +289,8 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
   ): Result;
 
   events: {
+    "Approval(address,address,uint256)": EventFragment;
+    "ApprovalForAll(address,address,bool)": EventFragment;
     "CommissionBipsUpdated(uint256)": EventFragment;
     "FeePayout(address,address,uint256)": EventFragment;
     "FeeUpdated(bytes32,uint256)": EventFragment;
@@ -203,8 +301,11 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     "RegisteredSubdomain(bytes32,string,address)": EventFragment;
     "RegistrableUpdated(bool)": EventFragment;
     "RelayerUpdated(address)": EventFragment;
+    "Transfer(address,address,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CommissionBipsUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FeePayout"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FeeUpdated"): EventFragment;
@@ -215,6 +316,7 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "RegisteredSubdomain"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RegistrableUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RelayerUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
 export class SoulRegistrar extends Contract {
@@ -234,6 +336,32 @@ export class SoulRegistrar extends Contract {
     acceptOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
     "acceptOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+    approve(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "approve(address,uint256)"(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    balanceOf(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { balance: BigNumber }>;
+
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { balance: BigNumber }>;
+
+    baseURI(overrides?: CallOverrides): Promise<[string]>;
+
+    "baseURI()"(overrides?: CallOverrides): Promise<[string]>;
 
     claimed(
       arg0: BytesLike,
@@ -269,6 +397,28 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
 
+    getApproved(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    "getApproved(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    isApprovedForAll(
+      owner: string,
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "isApprovedForAll(address,address)"(
+      owner: string,
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     merkleRoots(arg0: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
     "merkleRoots(bytes32)"(
@@ -276,9 +426,23 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    name(overrides?: CallOverrides): Promise<[string]>;
+
+    "name()"(overrides?: CallOverrides): Promise<[string]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     "owner()"(overrides?: CallOverrides): Promise<[string]>;
+
+    ownerOf(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    "ownerOf(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     pendingOwner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -330,9 +494,40 @@ export class SoulRegistrar extends Contract {
 
     "relayer()"(overrides?: CallOverrides): Promise<[string]>;
 
+    renderer(overrides?: CallOverrides): Promise<[string]>;
+
+    "renderer()"(overrides?: CallOverrides): Promise<[string]>;
+
     renounceOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+    "safeTransferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "safeTransferFrom(address,address,uint256,bytes)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    setApprovalForAll(
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "setApprovalForAll(address,bool)"(
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
 
     setCommissionBips(
       newBips: BigNumberish,
@@ -388,6 +583,48 @@ export class SoulRegistrar extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "supportsInterface(bytes4)"(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    symbol(overrides?: CallOverrides): Promise<[string]>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<[string]>;
+
+    tokenURI(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    "tokenURI(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    transferFrom(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides
@@ -412,6 +649,29 @@ export class SoulRegistrar extends Contract {
   acceptOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
   "acceptOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+  approve(
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "approve(address,uint256)"(
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "balanceOf(address)"(
+    owner: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  baseURI(overrides?: CallOverrides): Promise<string>;
+
+  "baseURI()"(overrides?: CallOverrides): Promise<string>;
 
   claimed(
     arg0: BytesLike,
@@ -447,6 +707,28 @@ export class SoulRegistrar extends Contract {
     overrides?: CallOverrides
   ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
 
+  getApproved(
+    tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  "getApproved(uint256)"(
+    tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  isApprovedForAll(
+    owner: string,
+    operator: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  "isApprovedForAll(address,address)"(
+    owner: string,
+    operator: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   merkleRoots(arg0: BytesLike, overrides?: CallOverrides): Promise<string>;
 
   "merkleRoots(bytes32)"(
@@ -454,9 +736,20 @@ export class SoulRegistrar extends Contract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  name(overrides?: CallOverrides): Promise<string>;
+
+  "name()"(overrides?: CallOverrides): Promise<string>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   "owner()"(overrides?: CallOverrides): Promise<string>;
+
+  ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "ownerOf(uint256)"(
+    tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   pendingOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -508,9 +801,40 @@ export class SoulRegistrar extends Contract {
 
   "relayer()"(overrides?: CallOverrides): Promise<string>;
 
+  renderer(overrides?: CallOverrides): Promise<string>;
+
+  "renderer()"(overrides?: CallOverrides): Promise<string>;
+
   renounceOwnership(overrides?: Overrides): Promise<ContractTransaction>;
 
   "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
+
+  "safeTransferFrom(address,address,uint256)"(
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "safeTransferFrom(address,address,uint256,bytes)"(
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  setApprovalForAll(
+    operator: string,
+    approved: boolean,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "setApprovalForAll(address,bool)"(
+    operator: string,
+    approved: boolean,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
 
   setCommissionBips(
     newBips: BigNumberish,
@@ -566,6 +890,45 @@ export class SoulRegistrar extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
+  supportsInterface(
+    interfaceId: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  "supportsInterface(bytes4)"(
+    interfaceId: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  symbol(overrides?: CallOverrides): Promise<string>;
+
+  "symbol()"(overrides?: CallOverrides): Promise<string>;
+
+  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+  "tokenURI(uint256)"(
+    tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  transferFrom(
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "transferFrom(address,address,uint256)"(
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
   transferOwnership(
     newOwner: string,
     overrides?: Overrides
@@ -587,6 +950,29 @@ export class SoulRegistrar extends Contract {
     acceptOwnership(overrides?: CallOverrides): Promise<void>;
 
     "acceptOwnership()"(overrides?: CallOverrides): Promise<void>;
+
+    approve(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "approve(address,uint256)"(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    baseURI(overrides?: CallOverrides): Promise<string>;
+
+    "baseURI()"(overrides?: CallOverrides): Promise<string>;
 
     claimed(
       arg0: BytesLike,
@@ -622,6 +1008,28 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<[string, BigNumber] & { recipient: string; fee: BigNumber }>;
 
+    getApproved(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    "getApproved(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    isApprovedForAll(
+      owner: string,
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "isApprovedForAll(address,address)"(
+      owner: string,
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     merkleRoots(arg0: BytesLike, overrides?: CallOverrides): Promise<string>;
 
     "merkleRoots(bytes32)"(
@@ -629,9 +1037,20 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    name(overrides?: CallOverrides): Promise<string>;
+
+    "name()"(overrides?: CallOverrides): Promise<string>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     "owner()"(overrides?: CallOverrides): Promise<string>;
+
+    ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+    "ownerOf(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     pendingOwner(overrides?: CallOverrides): Promise<string>;
 
@@ -683,9 +1102,40 @@ export class SoulRegistrar extends Contract {
 
     "relayer()"(overrides?: CallOverrides): Promise<string>;
 
+    renderer(overrides?: CallOverrides): Promise<string>;
+
+    "renderer()"(overrides?: CallOverrides): Promise<string>;
+
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     "renounceOwnership()"(overrides?: CallOverrides): Promise<void>;
+
+    "safeTransferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "safeTransferFrom(address,address,uint256,bytes)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setApprovalForAll(
+      operator: string,
+      approved: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setApprovalForAll(address,bool)"(
+      operator: string,
+      approved: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     setCommissionBips(
       newBips: BigNumberish,
@@ -738,6 +1188,45 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "supportsInterface(bytes4)"(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    symbol(overrides?: CallOverrides): Promise<string>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<string>;
+
+    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+
+    "tokenURI(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferFrom(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     transferOwnership(
       newOwner: string,
       overrides?: CallOverrides
@@ -757,6 +1246,18 @@ export class SoulRegistrar extends Contract {
   };
 
   filters: {
+    Approval(
+      owner: string | null,
+      approved: string | null,
+      tokenId: BigNumberish | null
+    ): EventFilter;
+
+    ApprovalForAll(
+      owner: string | null,
+      operator: string | null,
+      approved: null
+    ): EventFilter;
+
     CommissionBipsUpdated(newBips: null): EventFilter;
 
     FeePayout(from: string | null, to: string | null, value: null): EventFilter;
@@ -793,12 +1294,41 @@ export class SoulRegistrar extends Contract {
     RegistrableUpdated(newRegistrable: null): EventFilter;
 
     RelayerUpdated(newRelayer: null): EventFilter;
+
+    Transfer(
+      from: string | null,
+      to: string | null,
+      tokenId: BigNumberish | null
+    ): EventFilter;
   };
 
   estimateGas: {
     acceptOwnership(overrides?: Overrides): Promise<BigNumber>;
 
     "acceptOwnership()"(overrides?: Overrides): Promise<BigNumber>;
+
+    approve(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "approve(address,uint256)"(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    baseURI(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "baseURI()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     claimed(
       arg0: BytesLike,
@@ -831,6 +1361,28 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getApproved(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getApproved(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isApprovedForAll(
+      owner: string,
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "isApprovedForAll(address,address)"(
+      owner: string,
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     merkleRoots(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
 
     "merkleRoots(bytes32)"(
@@ -838,9 +1390,23 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "name()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     "owner()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    ownerOf(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "ownerOf(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     pendingOwner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -892,9 +1458,40 @@ export class SoulRegistrar extends Contract {
 
     "relayer()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    renderer(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "renderer()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     renounceOwnership(overrides?: Overrides): Promise<BigNumber>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<BigNumber>;
+
+    "safeTransferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "safeTransferFrom(address,address,uint256,bytes)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    setApprovalForAll(
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "setApprovalForAll(address,bool)"(
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
 
     setCommissionBips(
       newBips: BigNumberish,
@@ -947,6 +1544,48 @@ export class SoulRegistrar extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "supportsInterface(bytes4)"(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    symbol(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    tokenURI(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "tokenURI(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferFrom(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides
@@ -969,6 +1608,32 @@ export class SoulRegistrar extends Contract {
     acceptOwnership(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     "acceptOwnership()"(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    approve(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "approve(address,uint256)"(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    balanceOf(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "baseURI()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     claimed(
       arg0: BytesLike,
@@ -1006,6 +1671,28 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getApproved(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getApproved(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isApprovedForAll(
+      owner: string,
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "isApprovedForAll(address,address)"(
+      owner: string,
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     merkleRoots(
       arg0: BytesLike,
       overrides?: CallOverrides
@@ -1016,9 +1703,23 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "owner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    ownerOf(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "ownerOf(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     pendingOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1070,9 +1771,40 @@ export class SoulRegistrar extends Contract {
 
     "relayer()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    renderer(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "renderer()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     renounceOwnership(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     "renounceOwnership()"(overrides?: Overrides): Promise<PopulatedTransaction>;
+
+    "safeTransferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "safeTransferFrom(address,address,uint256,bytes)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    setApprovalForAll(
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "setApprovalForAll(address,bool)"(
+      operator: string,
+      approved: boolean,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
 
     setCommissionBips(
       newBips: BigNumberish,
@@ -1125,6 +1857,48 @@ export class SoulRegistrar extends Contract {
 
     "setRelayer(address)"(
       newRelayer: string,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "supportsInterface(bytes4)"(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    tokenURI(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "tokenURI(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    transferFrom(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

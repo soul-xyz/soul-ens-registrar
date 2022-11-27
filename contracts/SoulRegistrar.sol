@@ -4,14 +4,26 @@ pragma solidity ^0.8.0;
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IENS} from "./ens/interfaces/IENS.sol";
+import {IRenderer} from "./renderer/interface/IRenderer.sol";
 import {IENSResolver} from "./ens/interfaces/IENSResolver.sol";
 import {IENSRegistrar} from "./ens/interfaces/IENSRegistrar.sol";
-import "./ens/interfaces/ISoulRegistrar.sol";
-import {IERC721} from "./lib/ERC721/interface/IERC721.sol";
+import {ISoulRegistrar} from "./ens/interfaces/ISoulRegistrar.sol";
+import {IERC721, IERC721Metadata, IERC721Events} from "./lib/ERC721/interface/IERC721.sol";
+import {IERC165} from "./lib/ERC165/interface/IERC165.sol";
 
-contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
+contract SoulRegistrar is
+IERC165,
+IERC721,
+IERC721Metadata,
+IERC721Events,
+ISoulRegistrar,
+Ownable2Step,
+ReentrancyGuard
+{
 
     // ======================== Immutable Storage ========================
     /**
@@ -48,6 +60,7 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
 
     // Root node => funding recipient => fee amount
     mapping(bytes32 => NodeFeeConfig) public feeConfigs;
+
     struct NodeFeeConfig {
         address payable recipient;
         uint256 fee;
@@ -55,6 +68,22 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
 
     // Soul commission charge bips
     uint256 public commissionBips;
+
+    // ============================ ERC721 ==============================
+
+    string public constant baseURI = "https://soul.xyz/";
+    uint256 public totalSupply;
+    mapping(uint256 => bytes32) private _nodes;
+    mapping(address => uint256) internal _balances;
+
+    // ============================ ERC721 Metadata ==============================
+
+    string public override name = "Soul V1 ENS Subdomains";
+    string public override symbol = "SOUL_V1_ENS_SUBDOMAINS";
+
+    // ============================ ERC721 Renderer ==============================
+
+    address public renderer;
 
     // ================================ Events ==============================
 
@@ -76,6 +105,7 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
     error AlreadyClaimed();
     error InvalidProof();
     error SubdomainAlreadyOwned();
+    error UnsupportedAction();
 
     // ============================== Modifiers ==============================
 
@@ -83,12 +113,12 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
      * @dev Modifier to check whether the `msg.sender` is the relayer.
      */
     modifier onlyRelayer() {
-        if(msg.sender != relayer()) revert Unauthorized();
+        if (msg.sender != relayer()) revert Unauthorized();
         _;
     }
 
     modifier canRegister() {
-        if(!registrable) revert RegistrationHasNotStarted();
+        if (!registrable) revert RegistrationHasNotStarted();
         _;
     }
 
@@ -138,7 +168,7 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
      * Allows the owner to set the commission bips
      */
     function setCommissionBips(uint256 newBips) external onlyOwner {
-        if(newBips > 10000) revert InvalidParams();
+        if (newBips > 10000) revert InvalidParams();
 
         commissionBips = newBips;
         emit CommissionBipsUpdated(newBips);
@@ -178,16 +208,16 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
         string[] calldata labels,
         bytes32[][] calldata merkleProofs
     )
-        external
-        payable
-        canRegister
-        nonReentrant
+    external
+    payable
+    canRegister
+    nonReentrant
     {
-        if(receivers.length != labels.length || receivers.length != merkleProofs.length) revert InvalidParams();
+        if (receivers.length != labels.length || receivers.length != merkleProofs.length) revert InvalidParams();
 
         // registration fee
         NodeFeeConfig memory feeConfig = feeConfigs[rootNode];
-        if(msg.value < feeConfig.fee) revert InsufficientBalance();
+        if (msg.value < feeConfig.fee) revert InsufficientBalance();
 
         uint256 payout = feeConfig.fee * (10000 - commissionBips) / 10000 * receivers.length;
         if (payout > 0) {
@@ -221,17 +251,17 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
         bytes32 rootShard,
         bytes32[] calldata merkleProof
     )
-        external
-        canRegister
+    external
+    canRegister
     {
         bytes32 claimId = keccak256(abi.encodePacked(tokenId, nftContract));
         //  Make sure it's not already claimed.
-        if(claimed[rootShard][claimId]) revert AlreadyClaimed();
+        if (claimed[rootShard][claimId]) revert AlreadyClaimed();
         // Mark it as claimed.
         claimed[rootShard][claimId] = true;
 
         // NOTE: No registration fee for existing NFT holders.
-        if(msg.sender != IERC721(nftContract).ownerOf(tokenId)) revert Unauthorized();
+        if (msg.sender != IERC721(nftContract).ownerOf(tokenId)) revert Unauthorized();
 
         bytes32 merkleLeaf = keccak256(abi.encodePacked(nftContract, rootNode, "*"));
         _register(rootNode, rootShard, msg.sender, label, merkleProof, merkleLeaf);
@@ -257,17 +287,17 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
         bytes32[] memory merkleProof,
         bytes32 merkleLeaf
     )
-        private
+    private
     {
         // Verify the merkle proof.
-        if(!MerkleProof.verify(merkleProof, merkleRoots[rootShard], merkleLeaf)) revert InvalidProof();
+        if (!MerkleProof.verify(merkleProof, merkleRoots[rootShard], merkleLeaf)) revert InvalidProof();
         // We don't need to mark it as claimed, because the label is already scarce.
 
         // Register the node with ens
         bytes32 labelNode = keccak256(abi.encodePacked(label));
         bytes32 node = keccak256(abi.encodePacked(rootNode, labelNode));
 
-        if(ensRegistry.owner(node) != address(0)) revert SubdomainAlreadyOwned();
+        if (ensRegistry.owner(node) != address(0)) revert SubdomainAlreadyOwned();
 
         // mint the subdomain to this contract first
         ensRegistry.setSubnodeRecord(rootNode, labelNode, address(this), address(ensResolver), 0);
@@ -277,6 +307,8 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
 
         // transfer the subdomain to user
         ensRegistry.setSubnodeOwner(rootNode, labelNode, receiver);
+
+        _mint(receiver, node);
 
         emit RegisteredSubdomain(rootNode, label, receiver);
     }
@@ -289,4 +321,137 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
         Address.sendValue(to, balance);
         emit FeeWithdrawal(address(this), to, balance);
     }
+
+    // ========================== ERC721 Functions ==========================
+
+    function tokenURI(uint256 tokenId)
+    external
+    view
+    override
+    returns (string memory)
+    {
+        require(_exists(tokenId), "ERC721: query for nonexistent token");
+
+        bytes32 node = _nodes[tokenId];
+
+        if (renderer != address(0)) {
+            return IRenderer(renderer).tokenURI(tokenId, node);
+        }
+
+        string memory json = Base64.encode(
+            bytes(
+                string(
+                    abi.encodePacked(
+                        '{"name": "',
+                        name,
+                        " ",
+                        Strings.toString(tokenId),
+                        node,
+                        '", "image": "https://',
+                        string(abi.encode(baseURI, "/", node)),
+                        '", "attributes":[{ "trait_type": "Serial", "value": ',
+                        Strings.toString(tokenId),
+                        "}] }"
+                    )
+                )
+            )
+        );
+
+        return string(abi.encodePacked("data:application/json;base64,", json));
+    }
+
+    function ownerOf(uint256 tokenId) external view virtual returns (address) {
+        // Return the owner of the ENS node.
+        // Get the node associated with the token.
+        return ensRegistry.owner(_nodes[tokenId]);
+    }
+
+    function _mint(address to, bytes32 node) internal virtual {
+        // Token ID maps to a node, so we can look up the owner.
+        _nodes[++totalSupply] = node;
+        // Increment the balance of the receiver.
+        _balances[to] += 1;
+        // Emit ERC721 Transfer event.
+        emit Transfer(address(0), to, totalSupply);
+    }
+
+    function _exists(uint256 tokenId) internal view virtual returns (bool) {
+        return tokenId <= totalSupply;
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+    public
+    view
+    virtual
+    override
+    returns (bool)
+    {
+        return interfaceId == type(IERC721).interfaceId ||
+        interfaceId == type(IERC721Metadata).interfaceId ||
+        interfaceId == type(IERC165).interfaceId;
+    }
+
+    function approve(address to, uint256 tokenId) external virtual override {
+        revert UnsupportedAction();
+    }
+
+    function getApproved(uint256 tokenId)
+    public
+    view
+    virtual
+    override
+    returns (address)
+    {
+        return address(0);
+    }
+
+    function setApprovalForAll(address operator, bool approved)
+    external
+    virtual
+    override
+    {
+        revert UnsupportedAction();
+    }
+
+    function isApprovedForAll(address owner, address operator)
+    public
+    view
+    virtual
+    override
+    returns (bool)
+    {
+        return false;
+    }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external virtual override {
+        revert UnsupportedAction();
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external virtual override {
+        revert UnsupportedAction();
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external virtual override {
+        revert UnsupportedAction();
+    }
+
+    function balanceOf(address owner) external view returns (uint256 balance) {
+        require(owner != address(0), "ERC721: address zero is not a valid owner");
+        return _balances[owner];
+    }
 }
+
+
