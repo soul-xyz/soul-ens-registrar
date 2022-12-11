@@ -4,14 +4,15 @@ pragma solidity ^0.8.0;
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IENS} from "./ens/interfaces/IENS.sol";
 import {IENSResolver} from "./ens/interfaces/IENSResolver.sol";
 import {IENSRegistrar} from "./ens/interfaces/IENSRegistrar.sol";
-import "./ens/interfaces/ISoulRegistrar.sol";
 import {IERC721} from "./lib/ERC721/interface/IERC721.sol";
+import "./ens/interfaces/ISoulRegistrar.sol";
 
 contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
+    using SafeERC20 for IERC20;
 
     // ======================== Immutable Storage ========================
     /**
@@ -26,6 +27,11 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
      * The ENS public resolver at 0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41
      */
     IENSResolver public immutable ensResolver;
+
+    /**
+     * USDC contract
+     */
+    IERC20 public immutable usdc;
 
     // ================ Mutable Ownership Configuration ==================
 
@@ -101,10 +107,12 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
      */
     constructor(
         address ensRegistry_,
-        address ensResolver_
+        address ensResolver_,
+        address usdc_
     ) {
         ensRegistry = IENS(ensRegistry_);
         ensResolver = IENSResolver(ensResolver_);
+        usdc = IERC20(usdc_);
         setRegistrable(true);
     }
 
@@ -179,7 +187,6 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
         bytes32[][] calldata merkleProofs
     )
         external
-        payable
         canRegister
         nonReentrant
     {
@@ -187,11 +194,12 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
 
         // registration fee
         NodeFeeConfig memory feeConfig = feeConfigs[rootNode];
-        if(msg.value < feeConfig.fee) revert InsufficientBalance();
+
+        usdc.safeTransferFrom(msg.sender, address(this), feeConfig.fee);
 
         uint256 payout = feeConfig.fee * (10000 - commissionBips) / 10000 * receivers.length;
         if (payout > 0) {
-            Address.sendValue(feeConfig.recipient, payout);
+            usdc.safeTransfer(feeConfig.recipient, payout);
             emit FeePayout(address(this), feeConfig.recipient, payout);
         }
 
@@ -285,8 +293,8 @@ contract SoulRegistrar is ISoulRegistrar, Ownable2Step, ReentrancyGuard {
 
     function withdrawFees(address payable to) external onlyOwner
     {
-        uint256 balance = address(this).balance;
-        Address.sendValue(to, balance);
+        uint256 balance = usdc.balanceOf(address(this));
+        usdc.safeTransfer(to, balance);
         emit FeeWithdrawal(address(this), to, balance);
     }
 }

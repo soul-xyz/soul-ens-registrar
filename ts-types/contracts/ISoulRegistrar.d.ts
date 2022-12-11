@@ -14,7 +14,6 @@ import {
   Contract,
   ContractTransaction,
   Overrides,
-  PayableOverrides,
   CallOverrides,
 } from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
@@ -88,7 +87,7 @@ export class ISoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
@@ -97,7 +96,7 @@ export class ISoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
 
@@ -127,7 +126,7 @@ export class ISoulRegistrar extends Contract {
     receivers: string[],
     labels: string[],
     merkleProofs: BytesLike[][],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
@@ -136,7 +135,7 @@ export class ISoulRegistrar extends Contract {
     receivers: string[],
     labels: string[],
     merkleProofs: BytesLike[][],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   callStatic: {
@@ -208,7 +207,7 @@ export class ISoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
@@ -217,7 +216,7 @@ export class ISoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<BigNumber>;
   };
 
@@ -248,7 +247,7 @@ export class ISoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
@@ -257,7 +256,7 @@ export class ISoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
   };
 }

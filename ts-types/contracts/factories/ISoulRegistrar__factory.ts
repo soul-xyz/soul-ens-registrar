@@ -85,7 +85,7 @@ const _abi = [
     ],
     name: "registerWithProof",
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
     type: "function",
   },
 ];

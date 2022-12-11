@@ -3,6 +3,8 @@
 /* eslint-disable */
 export type { Ownable } from "./Ownable";
 export type { Ownable2Step } from "./Ownable2Step";
+export type { IERC20Permit } from "./IERC20Permit";
+export type { IERC20 } from "./IERC20";
 export type { ENSRegistrar } from "./ENSRegistrar";
 export type { ENSResolver } from "./ENSResolver";
 export type { IENS } from "./IENS";
@@ -27,6 +29,8 @@ export type { SoulRegistrar } from "./SoulRegistrar";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
 export { Ownable2Step__factory } from "./factories/Ownable2Step__factory";
+export { IERC20Permit__factory } from "./factories/IERC20Permit__factory";
+export { IERC20__factory } from "./factories/IERC20__factory";
 export { ENSRegistrar__factory } from "./factories/ENSRegistrar__factory";
 export { ENSResolver__factory } from "./factories/ENSResolver__factory";
 export { IENS__factory } from "./factories/IENS__factory";

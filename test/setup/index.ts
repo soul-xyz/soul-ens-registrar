@@ -4,11 +4,11 @@ import {SoulRegistrar} from "../../ts-types/contracts";
 
 async function setup() {
   const [owner] = await ethers.getSigners();
+  const usdcAddress = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F"; //Goerli
 
   const ENSRegistry = await ethers.getContractFactory("ENSRegistry");
   const ensRegistry = await ENSRegistry.deploy();
   await ensRegistry.deployed();
-
 
   const ENSResolver = await ethers.getContractFactory(
     "ENSResolver"
@@ -19,7 +19,8 @@ async function setup() {
   const SoulRegistrar = await ethers.getContractFactory("SoulRegistrar");
   const soulRegistrar = await SoulRegistrar.deploy(
     ensRegistry.address,
-    ensResolver.address
+    ensResolver.address,
+    usdcAddress
   );
   await soulRegistrar.deployed();
 

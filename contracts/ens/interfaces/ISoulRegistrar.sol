@@ -8,7 +8,7 @@ interface ISoulRegistrar {
         address[] calldata receivers,
         string[] calldata labels,
         bytes32[][] calldata merkleProofs
-    ) external payable;
+    ) external;
 
     function registerWithNFTOwnership(
         address nftContract,
