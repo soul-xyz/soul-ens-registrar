@@ -14,7 +14,6 @@ import {
   Contract,
   ContractTransaction,
   Overrides,
-  PayableOverrides,
   CallOverrides,
 } from "@ethersproject/contracts";
 import { BytesLike } from "@ethersproject/bytes";
@@ -43,6 +42,7 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     "setRegistrationFee(bytes32,tuple)": FunctionFragment;
     "setRelayer(address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "usdc()": FunctionFragment;
     "withdrawFees(address)": FunctionFragment;
   };
 
@@ -117,6 +117,7 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(functionFragment: "usdc", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdrawFees",
     values: [string]
@@ -187,6 +188,7 @@ interface SoulRegistrarInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "usdc", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "withdrawFees",
     data: BytesLike
@@ -310,7 +312,7 @@ export class SoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
@@ -319,7 +321,7 @@ export class SoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     registrable(overrides?: CallOverrides): Promise<[boolean]>;
@@ -397,6 +399,10 @@ export class SoulRegistrar extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
+
+    usdc(overrides?: CallOverrides): Promise<[string]>;
+
+    "usdc()"(overrides?: CallOverrides): Promise<[string]>;
 
     withdrawFees(
       to: string,
@@ -488,7 +494,7 @@ export class SoulRegistrar extends Contract {
     receivers: string[],
     labels: string[],
     merkleProofs: BytesLike[][],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
@@ -497,7 +503,7 @@ export class SoulRegistrar extends Contract {
     receivers: string[],
     labels: string[],
     merkleProofs: BytesLike[][],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   registrable(overrides?: CallOverrides): Promise<boolean>;
@@ -575,6 +581,10 @@ export class SoulRegistrar extends Contract {
     newOwner: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
+
+  usdc(overrides?: CallOverrides): Promise<string>;
+
+  "usdc()"(overrides?: CallOverrides): Promise<string>;
 
   withdrawFees(to: string, overrides?: Overrides): Promise<ContractTransaction>;
 
@@ -748,6 +758,10 @@ export class SoulRegistrar extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    usdc(overrides?: CallOverrides): Promise<string>;
+
+    "usdc()"(overrides?: CallOverrides): Promise<string>;
+
     withdrawFees(to: string, overrides?: CallOverrides): Promise<void>;
 
     "withdrawFees(address)"(
@@ -872,7 +886,7 @@ export class SoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
@@ -881,7 +895,7 @@ export class SoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     registrable(overrides?: CallOverrides): Promise<BigNumber>;
@@ -956,6 +970,10 @@ export class SoulRegistrar extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
+
+    usdc(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "usdc()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdrawFees(to: string, overrides?: Overrides): Promise<BigNumber>;
 
@@ -1050,7 +1068,7 @@ export class SoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "registerWithProof(bytes32,bytes32,address[],string[],bytes32[][])"(
@@ -1059,7 +1077,7 @@ export class SoulRegistrar extends Contract {
       receivers: string[],
       labels: string[],
       merkleProofs: BytesLike[][],
-      overrides?: PayableOverrides
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     registrable(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1137,6 +1155,10 @@ export class SoulRegistrar extends Contract {
       newOwner: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
+
+    usdc(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "usdc()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdrawFees(
       to: string,
